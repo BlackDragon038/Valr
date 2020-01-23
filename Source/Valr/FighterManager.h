@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Camera.h"
 #include "GameFramework/Actor.h"
 
 #include "FighterPawn.h"
@@ -19,14 +20,16 @@ public:
 	AFighterManager();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	AFighterPawn* p1;
+	AFighterPawn* Player1 = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	AFighterPawn* p2;
-
+	AFighterPawn* Player2 = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 round_timer;
+		ACamera* Camera = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 roundTimer = 100;
 
 protected:
 	// Called when the game starts or when spawned

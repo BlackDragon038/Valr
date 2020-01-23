@@ -2,38 +2,45 @@
 
 #pragma once
 
+#include "Runtime/Engine/Classes/Components/SkeletalMeshComponent.h"
+#include "Runtime/Engine/Classes/Engine/StaticMeshActor.h"
+
+
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 
 #include <vector>
-
 #include "FighterPawn.generated.h"
 
+enum INPUT {Idle, W,A,S,D,Light, Medium, Heavy, Special};
+
 USTRUCT(BlueprintType)
-struct FFrameData {
+struct FFrameData 
+{
 	GENERATED_BODY()
 
 		UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float min_dist;
+		float minDist;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float max_dist;
+		float maxDist;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float min_angle;
+		float minAngle;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float max_angle;
+		float maxAngle;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		uint8 hold;
+		uint8 Hold;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		uint8 psum;
+		uint8 PSum;
 };
 
 USTRUCT(BlueprintType)
-struct FAttackData {
+struct FAttackData 
+{
 	GENERATED_BODY()
 		UPROPERTY(EditAnywhere)
-		uint8 damage;
+		uint8 Damage;
 	UPROPERTY(EditAnywhere)
-		TArray<FFrameData> frames;
+		TArray<FFrameData> Frames;
 };
 
 UCLASS()
@@ -45,17 +52,23 @@ public:
 	// Sets default values for this pawn's properties
 	AFighterPawn();
 
-	UPROPERTY(BlueprintReadWrite)
-	uint8 i;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	USkeletalMeshComponent* SkeletalMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	USceneComponent* Root;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	uint8 InputID = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		uint8 health;
+		uint8 Health = 100;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		uint8 stamina;
-	enum state { idle, moving, blocking, attacking, stunned, recovering };
-	uint8 lock_frames;
+		uint8 Stamina = 100;
+	enum STATE { Idle, Moving, Blocking, Attacking, Stunned, Recovering };
+	uint8 lockFrames;
 	UPROPERTY(EditAnywhere)
-		TArray<FAttackData> attacks;
+		TArray<FAttackData> Attacks;
 
 protected:
 	// Called when the game starts or when spawned
@@ -75,16 +88,8 @@ public:
 	void ReleasedA();
 	void ReleasedS();
 	void ReleasedD();
-	void Pressed1();
-	void Pressed2();
-	void Pressed3();
-	void Pressed4();
-	/*void Pressed5();
-	void Pressed6();
-	void Pressed7();
-	void Pressed8();
-	void Pressed9();
-	void Pressed10();
-	void Pressed11();
-	void Pressed12();*/
+	void PressedLight();
+	void PressedMedium();
+	void PressedHeavy();
+	void PressedSpecial();
 };
