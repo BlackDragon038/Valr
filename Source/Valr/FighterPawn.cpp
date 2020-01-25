@@ -4,6 +4,8 @@
 #include "FighterPawn.h"
 #include "DrawDebugHelpers.h"
 
+#include <cmath>
+
 
 // Sets default values
 AFighterPawn::AFighterPawn()
