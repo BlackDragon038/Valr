@@ -17,6 +17,11 @@ AFighterManager::AFighterManager()
 void AFighterManager::BeginPlay() 
 {
 	Super::BeginPlay();
+	if (!Player1 || !Player2 || !Camera)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("FighterManager: The pointers aren't set up in the Blueprint!"));
+		return;
+	}
 	APlayerController* Controller = GetWorld()->GetFirstPlayerController();
 	Controller->SetViewTarget(Camera);
 	
@@ -26,15 +31,18 @@ void AFighterManager::BeginPlay()
 void AFighterManager::Tick(float DeltaTime) 
 {
 	Super::Tick(DeltaTime);
-	if (!Player1 || !Player2 || !Camera)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("FUCK!"));
-		return;
-	}
-	if (Player1->InputID > INPUT::D) 
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Hit!"));
-	}
-		//else UE_LOG(LogTemp, Warning, TEXT("Nah!"));
+	Camera->SetActorLocation(FVector((Player1->GetActorLocation().X + Player2->GetActorLocation().X) * 0.5f, (Player1->GetActorLocation().Y + Player2->GetActorLocation().Y) * 0.5f, Player1->GetActorLocation().Z + 130));
+	Camera->SpringArm->TargetArmLength = FVector::Distance(Player1->GetActorLocation(), Player2->GetActorLocation());
+	if (Camera->SpringArm->TargetArmLength < 400) Camera->SpringArm->TargetArmLength = 400;
+	if (Player1->State == AFighterPawn::STATE::Moving) Player1->SetActorRotation((Player2->GetActorLocation() - Player1->GetActorLocation()).Rotation());
+	if (Player2->State == AFighterPawn::STATE::Moving) Player2->SetActorRotation((Player1->GetActorLocation() - Player2->GetActorLocation()).Rotation());
+
+	FVector MiddleVector = Player2->GetActorLocation() - Player1->GetActorLocation();
+	FVector PerpendicularVector = { MiddleVector.Y,-MiddleVector.X,MiddleVector.Z };
+	PerpendicularVector.Normalize();
+	Camera->SetActorRotation(PerpendicularVector.Rotation());
+
+
+
 }
 

@@ -7,7 +7,7 @@
 ACamera::ACamera()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraAttachmentArm"));
 	SpringArm->SetupAttachment(RootComponent);
@@ -23,13 +23,11 @@ ACamera::ACamera()
 void ACamera::BeginPlay()
 {
 	Super::BeginPlay();
-	//SetActorLocation(FVector((Player1->GetActorLocation().X + Player2->GetActorLocation().X) * 0.5f, Player1->GetActorLocation().Y + 500, Player1->GetActorLocation().Z));
 }
 
 // Called every frame
 void ACamera::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	//SetActorLocation(FVector((Player1->GetActorLocation().X + Player2->GetActorLocation().X) * 0.5f, Player1->GetActorLocation().Y + 500, Player1->GetActorLocation().Z));
 }
 

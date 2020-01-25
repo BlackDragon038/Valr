@@ -12,8 +12,6 @@
 #include <vector>
 #include "FighterPawn.generated.h"
 
-enum INPUT {Idle, W,A,S,D,Light, Medium, Heavy, Special};
-
 USTRUCT(BlueprintType)
 struct FFrameData 
 {
@@ -49,6 +47,8 @@ class VALR_API AFighterPawn : public APawn
 	GENERATED_BODY()
 
 public:
+	enum INPUT { IDLE, UP, UP_LEFT, LEFT, LEFT_DOWN, DOWN, DOWN_RIGHT, RIGHT, RIGHT_UP, Light, Medium, Heavy, Special };
+
 	// Sets default values for this pawn's properties
 	AFighterPawn();
 
@@ -59,16 +59,31 @@ public:
 	USceneComponent* Root;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	uint8 InputID = 0;
+	uint8 InputID;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool isFirstPlayer = true;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 Health = 100;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 Stamina = 100;
 	enum STATE { Idle, Moving, Blocking, Attacking, Stunned, Recovering };
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		uint8 State;
+
 	uint8 lockFrames;
+
 	UPROPERTY(EditAnywhere)
 		TArray<FAttackData> Attacks;
+
+	int8 AxisW = 0, AxisA = 0, AxisS = 0, AxisD = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FVector currentVector;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Angle;
 
 protected:
 	// Called when the game starts or when spawned
@@ -80,14 +95,10 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	void PressedW();
-	void PressedA();
-	void PressedS();
-	void PressedD();
-	void ReleasedW();
-	void ReleasedA();
-	void ReleasedS();
-	void ReleasedD();
+	void PressedW(float Axis);
+	void PressedA(float Axis);
+	void PressedS(float Axis);
+	void PressedD(float Axis);
 	void PressedLight();
 	void PressedMedium();
 	void PressedHeavy();
