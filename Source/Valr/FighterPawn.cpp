@@ -24,6 +24,17 @@ void AFighterPawn::BeginPlay()
 	Super::BeginPlay();
 	State = STATE::Idle;
 	InputID = INPUT::IDLE;
+	attackType = ATTACK_TYPE::NONE;
+	unsigned int totalFrames = 0;
+	for (auto& a : Attacks)
+	{
+		totalFrames = 0;
+		for (auto& p : a.Parts)
+		{
+			totalFrames += p.Hold;
+			p.TotalFrameCount = totalFrames;
+		}
+	}
 }
 
 // Called every frame
@@ -43,21 +54,10 @@ void AFighterPawn::Tick(float DeltaTime)
 		State = STATE::Idle;
 		InputID = INPUT::IDLE;
 	}
-	FVector EastVector(std::sin(FMath::DegreesToRadians(Angle)), std::cos(FMath::DegreesToRadians(Angle)), 0);
+	/*FVector EastVector(std::sin(FMath::DegreesToRadians(Angle)), std::cos(FMath::DegreesToRadians(Angle)), 0);
 	float offsetAngle = FMath::RadiansToDegrees(std::acos(FVector::DotProduct(EastVector, GetActorRightVector()) / GetActorRightVector().Size() * EastVector.Size()));
 	UE_LOG(LogTemp, Warning, TEXT("Angle: %f"), offsetAngle);
-	currentVector = FVector(GetActorRightVector().X *std::sin(FMath::DegreesToRadians(Angle)), GetActorRightVector().Y * std::cos(FMath::DegreesToRadians(Angle)),0);
-
-	if (isFirstPlayer) DrawDebugLine
-	(
-		GetWorld(),
-		GetActorLocation(),
-		GetActorLocation() + (currentVector * 100),
-		FColor::Red,
-		false,
-		1,
-		1,
-		1);
+	currentVector = FVector(GetActorRightVector().X *std::sin(FMath::DegreesToRadians(Angle)), GetActorRightVector().Y * std::cos(FMath::DegreesToRadians(Angle)),0);*/
 }
 
 // Called to bind functionality to input
@@ -65,10 +65,6 @@ void AFighterPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	
-	/*PlayerInputComponent->BindAction("W", IE_Pressed, this, &AFighterPawn::PressedW);
-	PlayerInputComponent->BindAction("A", IE_Pressed, this, &AFighterPawn::PressedA);
-	PlayerInputComponent->BindAction("S", IE_Pressed, this, &AFighterPawn::PressedS);
-	PlayerInputComponent->BindAction("D", IE_Pressed, this, &AFighterPawn::PressedD);*/
 	PlayerInputComponent->BindAxis("W", this, &AFighterPawn::PressedW);
 	PlayerInputComponent->BindAxis("A", this, &AFighterPawn::PressedA);
 	PlayerInputComponent->BindAxis("S", this, &AFighterPawn::PressedS);
@@ -122,23 +118,43 @@ void AFighterPawn::PressedD(float Axis)
 void AFighterPawn::PressedLight() 
 {
 	UE_LOG(LogTemp, Warning, TEXT("Light Attack"));
-	State = STATE::Attacking;
+	if (State != STATE::Attacking)
+	{
+		State = STATE::Attacking;
+		InputID = INPUT::Light;
+		attackType = ATTACK_TYPE::LIGHT;
+	}
 }
 
 void AFighterPawn::PressedMedium() 
 {
 	UE_LOG(LogTemp, Warning, TEXT("Medium Attack"));
-	State = STATE::Attacking;
+	if (State != STATE::Attacking)
+	{
+		State = STATE::Attacking;
+		InputID = INPUT::Medium;
+		attackType = ATTACK_TYPE::MEDIUM;
+	}
 }
 
 void AFighterPawn::PressedHeavy() 
 {
 	UE_LOG(LogTemp, Warning, TEXT("Heavy Attack"));
-	State = STATE::Attacking;
+	if (State != STATE::Attacking)
+	{
+		State = STATE::Attacking;
+		InputID = INPUT::Heavy;
+		attackType = ATTACK_TYPE::HEAVY;
+	}
 }
 
 void AFighterPawn::PressedSpecial() 
 {
 	UE_LOG(LogTemp, Warning, TEXT("Special Attack"));
-	State = STATE::Attacking;
+	if (State != STATE::Attacking)
+	{
+		State = STATE::Attacking;
+		InputID = INPUT::Special;
+		attackType = ATTACK_TYPE::SPECIAL;
+	}
 }

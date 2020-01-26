@@ -13,7 +13,10 @@ ACamera::ACamera()
 	SpringArm->SetupAttachment(RootComponent);
 	SpringArm->TargetArmLength = 1000.0f;
 	SpringArm->bEnableCameraLag = true;
-	SpringArm->CameraLagSpeed = 2.0f;
+	SpringArm->CameraLagSpeed = 0.5f;
+	SpringArm->bDoCollisionTest = false;
+	SpringArm->bUseCameraLagSubstepping = false;
+	SpringArm->CameraLagMaxDistance = 10;
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);

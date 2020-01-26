@@ -11,13 +11,13 @@
 
 #include <vector>
 #include "FighterPawn.generated.h"
-
+ 
 USTRUCT(BlueprintType)
 struct FFrameData 
 {
 	GENERATED_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float minDist;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float maxDist;
@@ -26,9 +26,8 @@ struct FFrameData
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float maxAngle;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		uint8 Hold;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		uint8 PSum;
+		uint8 Hold = 1;
+		uint8 TotalFrameCount = 0;
 };
 
 USTRUCT(BlueprintType)
@@ -38,7 +37,8 @@ struct FAttackData
 		UPROPERTY(EditAnywhere)
 		uint8 Damage;
 	UPROPERTY(EditAnywhere)
-		TArray<FFrameData> Frames;
+		TArray<FFrameData> Parts;
+	unsigned int totalFrameCount;
 };
 
 UCLASS()
@@ -49,17 +49,19 @@ class VALR_API AFighterPawn : public APawn
 public:
 	enum INPUT { IDLE, UP, UP_LEFT, LEFT, LEFT_DOWN, DOWN, DOWN_RIGHT, RIGHT, RIGHT_UP, Light, Medium, Heavy, Special };
 
+	enum ATTACK_TYPE { LIGHT, MEDIUM, HEAVY, SPECIAL, NONE};
+
 	// Sets default values for this pawn's properties
 	AFighterPawn();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	USkeletalMeshComponent* SkeletalMesh;
+		USkeletalMeshComponent* SkeletalMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	USceneComponent* Root;
+		USceneComponent* Root;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	uint8 InputID;
+	UPROPERTY(BlueprintReadWrite)
+		uint8 InputID;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool isFirstPlayer = true;
@@ -67,23 +69,24 @@ public:
 		uint8 Health = 100;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 Stamina = 100;
+
 	enum STATE { Idle, Moving, Blocking, Attacking, Stunned, Recovering };
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 		uint8 State;
 
-	uint8 lockFrames;
+	uint8 currentFrameOfAttack = 0;
+	uint8 currentPartsIndex = 0;
 
 	UPROPERTY(EditAnywhere)
 		TArray<FAttackData> Attacks;
 
-	int8 AxisW = 0, AxisA = 0, AxisS = 0, AxisD = 0;
+	uint8 attackType = 4;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FVector currentVector;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float Angle;
+	int8 AxisW = 0;
+	int8 AxisA = 0;
+	int8 AxisS = 0;
+	int8 AxisD = 0;
 
 protected:
 	// Called when the game starts or when spawned

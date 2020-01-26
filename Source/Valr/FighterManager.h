@@ -35,6 +35,11 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	float Angle(FVector a, FVector b);
+
+	bool bPlayer1IsHit = false;
+	bool bPlayer2IsHit = false;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
