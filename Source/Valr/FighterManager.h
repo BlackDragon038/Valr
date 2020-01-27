@@ -29,7 +29,7 @@ public:
 		ACamera* Camera = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 roundTimer = 100;
+	int32 roundTimer = 3600;
 
 protected:
 	// Called when the game starts or when spawned

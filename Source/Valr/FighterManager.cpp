@@ -39,8 +39,8 @@ float AFighterManager::Angle(FVector a, FVector b)
 // Called every frame
 void AFighterManager::Tick(float DeltaTime) 
 {
-
 	Super::Tick(DeltaTime);
+	roundTimer -= 1;
 	FVector toPlayer1 = Player1->GetActorLocation() - Player2->GetActorLocation();
 	toPlayer1.Normalize();
 	FVector toPlayer2 = Player2->GetActorLocation() - Player1->GetActorLocation();
@@ -204,7 +204,8 @@ void AFighterManager::Tick(float DeltaTime)
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Blue, FString::Printf(TEXT("Player 2 AttackType: %i"), Player2->attackType));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Orange, FString::Printf(TEXT("Player 2 AttackTotalFrameCount: %i"), Player2->Attacks[0].Parts[0].PSum));
 													   
-	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Black, FString::Printf(TEXT("----------------------------------------------------------")));
+	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::White, FString::Printf(TEXT("FrameTime: %f----------------------FrameRate: %f"),DeltaTime,1000/DeltaTime));
+	
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Green, FString::Printf(TEXT("Player 1 Angle: %f  -  Player 1 to Player 2 Distance: %f"), Angle(Player1->GetActorRightVector(), toPlayer2), (Player2->GetActorLocation() - Player1->GetActorLocation()).Size()));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Green, FString::Printf(TEXT("IsPlayerHit? %i"), bPlayer2IsHit));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Red, FString::Printf(TEXT("Player 1 State: %i"), Player1->State));
