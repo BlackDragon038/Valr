@@ -5,7 +5,6 @@
 #include "Runtime/Engine/Classes/Components/SkeletalMeshComponent.h"
 #include "Runtime/Engine/Classes/Engine/StaticMeshActor.h"
 
-
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 
@@ -27,7 +26,7 @@ struct FFrameData
 		float maxAngle;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 Hold = 1;
-		uint8 TotalFrameCount = 0;
+		uint8 PSum = 0;
 };
 
 USTRUCT(BlueprintType)
@@ -38,7 +37,11 @@ struct FAttackData
 		uint8 Damage;
 	UPROPERTY(EditAnywhere)
 		TArray<FFrameData> Parts;
-	unsigned int totalFrameCount;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		uint8 StunRate = 1;
+
+	UPROPERTY(BlueprintReadOnly)
+	int AttackTotalFrameCount = 0;
 };
 
 UCLASS()
@@ -60,27 +63,33 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		USceneComponent* Root;
 
+
 	UPROPERTY(BlueprintReadWrite)
 		uint8 InputID;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool isFirstPlayer = true;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		uint8 Health = 100;
+		uint8 Health = 255;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 Stamina = 100;
+
+	uint8 hitByAttack = 4;
 
 	enum STATE { Idle, Moving, Blocking, Attacking, Stunned, Recovering };
 
 	UPROPERTY(BlueprintReadWrite)
 		uint8 State;
 
+
 	uint8 currentFrameOfAttack = 0;
+	
 	uint8 currentPartsIndex = 0;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		TArray<FAttackData> Attacks;
 
+	UPROPERTY(BlueprintReadOnly)
 	uint8 attackType = 4;
 
 	int8 AxisW = 0;
@@ -106,4 +115,6 @@ public:
 	void PressedMedium();
 	void PressedHeavy();
 	void PressedSpecial();
+	void PressedBlock();
+	void ReleasedBlock();
 };

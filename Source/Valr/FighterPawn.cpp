@@ -16,6 +16,7 @@ AFighterPawn::AFighterPawn()
 	RootComponent = Root;
 	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeletal Mesh"));
 	SkeletalMesh->SetupAttachment(Root);
+
 }
 
 // Called when the game starts or when spawned
@@ -32,8 +33,9 @@ void AFighterPawn::BeginPlay()
 		for (auto& p : a.Parts)
 		{
 			totalFrames += p.Hold;
-			p.TotalFrameCount = totalFrames;
+			p.PSum = totalFrames;
 		}
+		a.AttackTotalFrameCount = totalFrames;
 	}
 }
 
@@ -49,11 +51,12 @@ void AFighterPawn::Tick(float DeltaTime)
 	else if (AxisS == -1 && AxisD == 1 && AxisW == 0 && AxisA == 0) InputID = INPUT::DOWN_RIGHT;
 	else if (AxisD == 1 && AxisW == 0 && AxisA == 0 && AxisS == 0) InputID = INPUT::RIGHT;
 	else if (AxisD == 1 && AxisW == 1 && AxisA == 0 && AxisS == 0) InputID = INPUT::RIGHT_UP;
-	else if (AxisW == 0 && AxisA == 0 && AxisS == 0 && AxisD == 0)
+	else if (AxisW == 0 && AxisA == 0 && AxisS == 0 && AxisD == 0 && State != STATE::Attacking && State != STATE::Blocking && State != STATE::Recovering && State != STATE::Stunned)
 	{
 		State = STATE::Idle;
 		InputID = INPUT::IDLE;
 	}
+	if (State != STATE::Attacking && Stamina < 255) Stamina += 1;
 	/*FVector EastVector(std::sin(FMath::DegreesToRadians(Angle)), std::cos(FMath::DegreesToRadians(Angle)), 0);
 	float offsetAngle = FMath::RadiansToDegrees(std::acos(FVector::DotProduct(EastVector, GetActorRightVector()) / GetActorRightVector().Size() * EastVector.Size()));
 	UE_LOG(LogTemp, Warning, TEXT("Angle: %f"), offsetAngle);
@@ -73,88 +76,119 @@ void AFighterPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	PlayerInputComponent->BindAction("Medium", IE_Pressed,  this, &AFighterPawn::PressedMedium);
 	PlayerInputComponent->BindAction("Heavy", IE_Pressed,  this, &AFighterPawn::PressedHeavy);
 	PlayerInputComponent->BindAction("Special", IE_Pressed,  this, &AFighterPawn::PressedSpecial);
+	PlayerInputComponent->BindAction("Block", IE_Pressed, this, &AFighterPawn::PressedBlock);
+	PlayerInputComponent->BindAction("Block", IE_Released, this, &AFighterPawn::ReleasedBlock);
 }
 
 void AFighterPawn::PressedW(float Axis)  
 {
-	if (Axis > 0) 
-	{ 
-		State = STATE::Moving;
-		SetActorLocation(GetActorLocation() + GetActorRightVector() * ((isFirstPlayer) ? -4 : 4));
+	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Recovering && State != STATE::Stunned && Stamina > 10)
+	{
+		if (Axis > 0)
+		{
+			State = STATE::Moving;
+			SetActorLocation(GetActorLocation() + GetActorRightVector() * ((isFirstPlayer) ? -4 : 4));
+		}
+		AxisW = static_cast<int8>(Axis);
 	}
-	AxisW = static_cast<int8>(Axis);
+	
 }
 
 void AFighterPawn::PressedA(float Axis)
 {
-	if (Axis < 0)
+	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Recovering && State != STATE::Stunned && Stamina > 10)
 	{
-		State = STATE::Moving;
-		SetActorLocation(GetActorLocation() + GetActorForwardVector() * ((isFirstPlayer) ? -4 : 4));
+		if (Axis < 0)
+		{
+			State = STATE::Moving;
+			SetActorLocation(GetActorLocation() + GetActorForwardVector() * ((isFirstPlayer) ? -4 : 4));
+		}
+		AxisA = static_cast<int8>(Axis);
 	}
-	AxisA = static_cast<int8>(Axis);
 }
 
 void AFighterPawn::PressedS(float Axis)
 {
-	if (Axis < 0)
+	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Recovering && State != STATE::Stunned && Stamina > 10)
 	{
-		State = STATE::Moving;
-		SetActorLocation(GetActorLocation() + GetActorRightVector() * ((isFirstPlayer) ? 4 : -4));
+		if (Axis < 0)
+		{
+			State = STATE::Moving;
+			SetActorLocation(GetActorLocation() + GetActorRightVector() * ((isFirstPlayer) ? 4 : -4));
+		}
+		AxisS = static_cast<int8>(Axis);
 	}
-	AxisS = static_cast<int8>(Axis);
 }
 
 void AFighterPawn::PressedD(float Axis) 
 {
-	if (Axis > 0) 
-	{ 
-		State = STATE::Moving;
-		SetActorLocation(GetActorLocation() + GetActorForwardVector() * ((isFirstPlayer) ? 4 : -4)); 
+	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Recovering && State != STATE::Stunned && Stamina > 10)
+	{
+		if (Axis > 0)
+		{
+			State = STATE::Moving;
+			SetActorLocation(GetActorLocation() + GetActorForwardVector() * ((isFirstPlayer) ? 4 : -4));
+		}
+		AxisD = static_cast<int8>(Axis);
 	}
-	AxisD = static_cast<int8>(Axis);
 }
 
 void AFighterPawn::PressedLight() 
 {
-	UE_LOG(LogTemp, Warning, TEXT("Light Attack"));
-	if (State != STATE::Attacking)
+	if (State != STATE::Attacking && State != STATE::Recovering && State != STATE::Stunned && State != STATE::Blocking && Stamina >= 20)
 	{
 		State = STATE::Attacking;
 		InputID = INPUT::Light;
 		attackType = ATTACK_TYPE::LIGHT;
+		Stamina -= 20;
 	}
 }
 
 void AFighterPawn::PressedMedium() 
 {
-	UE_LOG(LogTemp, Warning, TEXT("Medium Attack"));
-	if (State != STATE::Attacking)
+	if (State != STATE::Attacking && State != STATE::Recovering && State != STATE::Stunned && State != STATE::Blocking && Stamina >= 45)
 	{
 		State = STATE::Attacking;
 		InputID = INPUT::Medium;
 		attackType = ATTACK_TYPE::MEDIUM;
+		Stamina -= 45;
 	}
 }
 
 void AFighterPawn::PressedHeavy() 
 {
-	UE_LOG(LogTemp, Warning, TEXT("Heavy Attack"));
-	if (State != STATE::Attacking)
+	if (State != STATE::Attacking && State != STATE::Recovering && State != STATE::Stunned && State != STATE::Blocking && Stamina >= 70)
 	{
 		State = STATE::Attacking;
 		InputID = INPUT::Heavy;
 		attackType = ATTACK_TYPE::HEAVY;
+		Stamina -= 70;
 	}
 }
 
 void AFighterPawn::PressedSpecial() 
 {
-	UE_LOG(LogTemp, Warning, TEXT("Special Attack"));
-	if (State != STATE::Attacking)
+	if (State != STATE::Attacking && State != STATE::Recovering && State != STATE::Stunned && State != STATE::Blocking && Stamina >= 100)
 	{
 		State = STATE::Attacking;
 		InputID = INPUT::Special;
 		attackType = ATTACK_TYPE::SPECIAL;
+		Stamina -= 100;
+	}
+}
+
+void AFighterPawn::PressedBlock()
+{
+	if (State != STATE::Attacking && State != STATE::Recovering && State != STATE::Stunned)
+	{
+		State = STATE::Blocking;
+	}
+}
+
+void AFighterPawn::ReleasedBlock()
+{
+	if (State != STATE::Attacking && State != STATE::Recovering && State != STATE::Stunned)
+	{
+		State = STATE::Idle;
 	}
 }
