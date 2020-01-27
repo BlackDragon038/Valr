@@ -16,7 +16,6 @@ AFighterPawn::AFighterPawn()
 	RootComponent = Root;
 	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeletal Mesh"));
 	SkeletalMesh->SetupAttachment(Root);
-
 }
 
 // Called when the game starts or when spawned
@@ -91,7 +90,6 @@ void AFighterPawn::PressedW(float Axis)
 		}
 		AxisW = static_cast<int8>(Axis);
 	}
-	
 }
 
 void AFighterPawn::PressedA(float Axis)

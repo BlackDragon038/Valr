@@ -94,8 +94,7 @@ void AFighterManager::Tick(float DeltaTime)
 			{
 				Player2->Health -= Player1->Attacks[Player1->attackType].Damage;
 				Player2->State = AFighterPawn::STATE::Stunned;
-				Player2->hitByAttack = Player1->attackType;
-				Player2->currentFrameOfAttack = 0;
+				Player2->currentFrameOfAttack = Player1->Attacks[Player1->attackType].StunRate;
 				bPlayer2IsHit = true;
 			}
 			Player1->currentFrameOfAttack++;
@@ -116,13 +115,9 @@ void AFighterManager::Tick(float DeltaTime)
 	}
 	else if (Player1->State == AFighterPawn::STATE::Stunned)
 	{
-		if (Player1->currentFrameOfAttack >= Player2->Attacks[Player1->hitByAttack].StunRate)
-		{
-			Player1->State = AFighterPawn::STATE::Idle;
-			Player1->currentFrameOfAttack = 0;
-
-		}
-		else Player1->currentFrameOfAttack++;
+		if (Player1->currentFrameOfAttack > 0)
+			Player1->currentFrameOfAttack--;
+		else Player1->State = AFighterPawn::STATE::Idle;
 	}
 
 	if (Player2->State == AFighterPawn::STATE::Moving)
@@ -164,8 +159,7 @@ void AFighterManager::Tick(float DeltaTime)
 			{
 				Player1->Health -= Player2->Attacks[Player2->attackType].Damage;
 				Player1->State = AFighterPawn::STATE::Stunned;
-				Player1->hitByAttack = Player2->attackType;
-				Player1->currentFrameOfAttack = 0;
+				Player1->currentFrameOfAttack = Player2->Attacks[Player2->attackType].StunRate;
 				bPlayer1IsHit = true;
 			}
 			Player2->currentFrameOfAttack++;
@@ -186,13 +180,9 @@ void AFighterManager::Tick(float DeltaTime)
 	}
 	else if (Player2->State == AFighterPawn::STATE::Stunned)
 	{
-		if (Player2->currentFrameOfAttack >= Player1->Attacks[Player2->hitByAttack].StunRate)
-		{
-			Player2->State = AFighterPawn::STATE::Idle;
-			Player2->currentFrameOfAttack = 0;
-
-		}
-		else Player2->currentFrameOfAttack++;
+		if (Player2->currentFrameOfAttack > 0)
+			Player2->currentFrameOfAttack--;
+		else Player2->State = AFighterPawn::STATE::Idle;
 	}
 
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Orange, FString::Printf(TEXT("Player 2 Angle: %f  -  Player 2 to Player 1 Distance: %f"), Angle(Player2->GetActorRightVector(), toPlayer1), (Player1->GetActorLocation() - Player2->GetActorLocation()).Size()));

@@ -35,10 +35,10 @@ struct FAttackData
 	GENERATED_BODY()
 		UPROPERTY(EditAnywhere)
 		uint8 Damage;
-	UPROPERTY(EditAnywhere)
-		TArray<FFrameData> Parts;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 StunRate = 1;
+	UPROPERTY(EditAnywhere)
+		TArray<FFrameData> Parts;
 
 	UPROPERTY(BlueprintReadOnly)
 	int AttackTotalFrameCount = 0;
@@ -74,13 +74,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 Stamina = 100;
 
-	uint8 hitByAttack = 4;
-
 	enum STATE { Idle, Moving, Blocking, Attacking, Stunned, Recovering };
 
 	UPROPERTY(BlueprintReadWrite)
 		uint8 State;
-
 
 	uint8 currentFrameOfAttack = 0;
 	
