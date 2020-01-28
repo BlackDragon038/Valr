@@ -50,7 +50,7 @@ class VALR_API AFighterPawn : public APawn
 	GENERATED_BODY()
 
 public:
-	enum INPUT { IDLE, UP, UP_LEFT, LEFT, LEFT_DOWN, DOWN, DOWN_RIGHT, RIGHT, RIGHT_UP, Light, Medium, Heavy, Special };
+	enum INPUT { IDLE, UP, UP_LEFT, LEFT, LEFT_DOWN, DOWN, DOWN_RIGHT, RIGHT, RIGHT_UP, Light, Medium, Heavy, Special, Block };
 
 	enum ATTACK_TYPE { LIGHT, MEDIUM, HEAVY, SPECIAL, NONE};
 
@@ -70,9 +70,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool isFirstPlayer = true;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		AFighterPawn * SecondPlayer;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 Health = 255;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		uint8 MovementSpeed = 4;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 Stamina = 100;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		uint8 blockStunRate = 25;
 
 	enum STATE { Idle, Moving, Blocking, Attacking, Stunned, Recovering };
 
@@ -80,8 +86,8 @@ public:
 		uint8 State;
 
 	uint8 currentFrameOfAttack = 0;
-	
 	uint8 currentPartsIndex = 0;
+	uint8 stepFrameCountTimeFrame = 60;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		TArray<FAttackData> Attacks;

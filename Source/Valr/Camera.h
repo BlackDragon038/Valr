@@ -25,6 +25,12 @@ public:
 	UPROPERTY(VisibleAnywhere)
 		USpringArmComponent* SpringArm;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float closestDistance = 350;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Height = 120;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
