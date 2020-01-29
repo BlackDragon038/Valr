@@ -27,7 +27,8 @@ void AFighterManager::BeginPlay()
 		return;
 	}
 	GetWorld()->GetFirstPlayerController()->SetViewTarget(Camera);
-	
+	AddTickPrerequisiteActor(Player1);
+	AddTickPrerequisiteActor(Player2);
 }
 
 float AFighterManager::Angle(FVector a, FVector b)
