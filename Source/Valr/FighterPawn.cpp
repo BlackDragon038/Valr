@@ -52,7 +52,7 @@ void AFighterPawn::Tick(float DeltaTime)
 	else if (AxisS == -1 && AxisD == 1 && AxisW == 0 && AxisA == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::DOWN_RIGHT;
 	else if (AxisD == 1 && AxisW == 0 && AxisA == 0 && AxisS == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::RIGHT;
 	else if (AxisD == 1 && AxisW == 1 && AxisA == 0 && AxisS == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::RIGHT_UP;
-	else if (AxisW == 0 && AxisA == 0 && AxisS == 0 && AxisD == 0 && State != STATE::Attacking && State != STATE::Blocking && State != STATE::Recovering && State != STATE::Stunned)
+	else if (AxisW == 0 && AxisA == 0 && AxisS == 0 && AxisD == 0 && State != STATE::Attacking && State != STATE::Blocking && State != STATE::Stunned)
 	{
 		State = STATE::Idle;
 		InputID = INPUT::IDLE;
@@ -85,7 +85,7 @@ void AFighterPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AFighterPawn::PressedW(float Axis)  
 {
-	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Recovering && State != STATE::Stunned && Stamina > 10)
+	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Stunned && Stamina > 10)
 	{
 		if (Axis > 0)
 		{
@@ -98,7 +98,7 @@ void AFighterPawn::PressedW(float Axis)
 
 void AFighterPawn::PressedA(float Axis)
 {
-	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Recovering && State != STATE::Stunned && Stamina > 10)
+	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Stunned && Stamina > 10)
 	{
 		if (Axis < 0)
 		{
@@ -111,7 +111,7 @@ void AFighterPawn::PressedA(float Axis)
 
 void AFighterPawn::PressedS(float Axis)
 {
-	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Recovering && State != STATE::Stunned && Stamina > 10)
+	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Stunned && Stamina > 10)
 	{
 		if (Axis < 0)
 		{
@@ -124,7 +124,7 @@ void AFighterPawn::PressedS(float Axis)
 
 void AFighterPawn::PressedD(float Axis) 
 {
-	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Recovering && State != STATE::Stunned && Stamina > 10)
+	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Stunned && Stamina > 10)
 	{
 		if (Axis > 0)
 		{
@@ -137,7 +137,7 @@ void AFighterPawn::PressedD(float Axis)
 
 void AFighterPawn::PressedLight() 
 {
-	if (State != STATE::Attacking && State != STATE::Recovering && State != STATE::Stunned && State != STATE::Blocking && Stamina >= 20)
+	if (State != STATE::Attacking && State != STATE::Stunned && State != STATE::Blocking && Stamina >= 20)
 	{
 		State = STATE::Attacking;
 		InputID = INPUT::Light;
@@ -148,7 +148,7 @@ void AFighterPawn::PressedLight()
 
 void AFighterPawn::PressedMedium() 
 {
-	if (State != STATE::Attacking && State != STATE::Recovering && State != STATE::Stunned && State != STATE::Blocking && Stamina >= 45)
+	if (State != STATE::Attacking && State != STATE::Stunned && State != STATE::Blocking && Stamina >= 45)
 	{
 		State = STATE::Attacking;
 		InputID = INPUT::Medium;
@@ -159,7 +159,7 @@ void AFighterPawn::PressedMedium()
 
 void AFighterPawn::PressedHeavy() 
 {
-	if (State != STATE::Attacking && State != STATE::Recovering && State != STATE::Stunned && State != STATE::Blocking && Stamina >= 70)
+	if (State != STATE::Attacking && State != STATE::Stunned && State != STATE::Blocking && Stamina >= 70)
 	{
 		State = STATE::Attacking;
 		InputID = INPUT::Heavy;
@@ -170,7 +170,7 @@ void AFighterPawn::PressedHeavy()
 
 void AFighterPawn::PressedSpecial() 
 {
-	if (State != STATE::Attacking && State != STATE::Recovering && State != STATE::Stunned && State != STATE::Blocking && Stamina >= 100)
+	if (State != STATE::Attacking && State != STATE::Stunned && State != STATE::Blocking && Stamina >= 100)
 	{
 		State = STATE::Attacking;
 		InputID = INPUT::Special;
@@ -181,7 +181,7 @@ void AFighterPawn::PressedSpecial()
 
 void AFighterPawn::PressedBlock()
 {
-	if (State != STATE::Attacking && State != STATE::Recovering && State != STATE::Stunned)
+	if (State != STATE::Attacking && State != STATE::Stunned)
 	{
 		State = STATE::Blocking;
 		InputID = INPUT::Block;
@@ -191,7 +191,7 @@ void AFighterPawn::PressedBlock()
 
 void AFighterPawn::ReleasedBlock()
 {
-	if (State != STATE::Attacking && State != STATE::Recovering && State != STATE::Stunned)
+	if (State != STATE::Attacking && State != STATE::Stunned)
 	{
 		State = STATE::Idle;
 		InputID = INPUT::IDLE;

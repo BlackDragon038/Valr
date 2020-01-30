@@ -10,6 +10,19 @@
 
 #include <vector>
 #include "FighterPawn.generated.h"
+
+USTRUCT(BlueprintType)
+struct FBlockData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float minDist;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float maxDist;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Angle;
+};
  
 USTRUCT(BlueprintType)
 struct FFrameData 
@@ -33,10 +46,12 @@ USTRUCT(BlueprintType)
 struct FAttackData 
 {
 	GENERATED_BODY()
-		UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere)
 		uint8 Damage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 StunRate = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		uint8 StunPushPower = 5;
 	UPROPERTY(EditAnywhere)
 		TArray<FFrameData> Parts;
 
@@ -70,8 +85,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool isFirstPlayer = true;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		AFighterPawn * SecondPlayer;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 Health = 255;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 MovementSpeed = 4;
@@ -80,17 +93,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 blockStunRate = 25;
 
-	enum STATE { Idle, Moving, Blocking, Attacking, Stunned, Recovering };
+	enum STATE { Idle, Moving, Blocking, Attacking, Stunned };
 
 	UPROPERTY(BlueprintReadWrite)
 		uint8 State;
 
 	uint8 currentFrameOfAttack = 0;
 	uint8 currentPartsIndex = 0;
-	uint8 stepFrameCountTimeFrame = 60;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		TArray<FAttackData> Attacks;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		FBlockData BlockData;
 
 	UPROPERTY(BlueprintReadOnly)
 	uint8 attackType = 4;

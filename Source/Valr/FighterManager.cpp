@@ -46,10 +46,13 @@ void AFighterManager::Tick(float DeltaTime)
 	toPlayer1.Normalize();
 	FVector toPlayer2 = Player2->GetActorLocation() - Player1->GetActorLocation();
 	toPlayer2.Normalize();
+
 	Camera->SetActorLocation(FVector((Player1->GetActorLocation().X + Player2->GetActorLocation().X) * 0.5f, (Player1->GetActorLocation().Y + Player2->GetActorLocation().Y) * 0.5f, Player1->GetActorLocation().Z + Camera->Height));
 	Camera->SpringArm->TargetArmLength = FVector::Distance(Player1->GetActorLocation(), Player2->GetActorLocation());
 	if (Camera->SpringArm->TargetArmLength < Camera->closestDistance) Camera->SpringArm->TargetArmLength = Camera->closestDistance;
-	
+
+	if (Player2->State != AFighterPawn::STATE::Stunned) Player2->InputID = AFighterPawn::INPUT::Block;
+	if (Player2->State != AFighterPawn::STATE::Stunned) Player2->State = AFighterPawn::STATE::Blocking;
 
 	FVector MiddleVector = Player2->GetActorLocation() - Player1->GetActorLocation();
 	FVector PerpendicularVector = { MiddleVector.Y,-MiddleVector.X,MiddleVector.Z };
@@ -82,26 +85,37 @@ void AFighterManager::Tick(float DeltaTime)
 				return;
 			}
 		}
-
 		if (Angle(Player1->GetActorRightVector(), toPlayer2) > Player1->Attacks[Player1->attackType].Parts[Player1->currentPartsIndex].minAngle &&
 			Angle(Player1->GetActorRightVector(), toPlayer2) < Player1->Attacks[Player1->attackType].Parts[Player1->currentPartsIndex].maxAngle &&
 			(Player2->GetActorLocation() - Player1->GetActorLocation()).Size() > Player1->Attacks[Player1->attackType].Parts[Player1->currentPartsIndex].minDist &&
 			(Player2->GetActorLocation() - Player1->GetActorLocation()).Size() < Player1->Attacks[Player1->attackType].Parts[Player1->currentPartsIndex].maxDist &&
 			Angle(Player1->GetActorForwardVector(), toPlayer2) < 90)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Red, FString::Printf(TEXT("Player 2 is hit!")));
-			if (!bPlayer2IsHit)
+			if (Player2->State == AFighterPawn::STATE::Blocking && Angle(Player2->GetActorForwardVector(), toPlayer1) < Player2->BlockData.Angle &&
+				(Player1->GetActorLocation() - Player2->GetActorLocation()).Size() > Player2->BlockData.minDist &&
+				(Player1->GetActorLocation() - Player2->GetActorLocation()).Size() < Player2->BlockData.maxDist)
 			{
-				Player2->Health -= Player1->Attacks[Player1->attackType].Damage;
-				Player2->State = AFighterPawn::STATE::Stunned;
-				Player2->currentFrameOfAttack = Player1->Attacks[Player1->attackType].StunRate;
-				bPlayer2IsHit = true;
+				if (!bPlayer1IsHit)
+				{
+					Player1->State = AFighterPawn::STATE::Stunned;
+					Player1->currentFrameOfAttack = Player2->blockStunRate;
+					bPlayer1IsHit = true;
+				}
 			}
-			Player1->currentFrameOfAttack++;
+			else
+			{
+				if (!bPlayer2IsHit)
+				{
+					Player2->Health -= Player1->Attacks[Player1->attackType].Damage;
+					Player2->State = AFighterPawn::STATE::Stunned;
+					Player2->currentFrameOfAttack = Player1->Attacks[Player1->attackType].StunRate;
+					bPlayer2IsHit = true;
+				}
+				Player1->currentFrameOfAttack++;
+			}
 		}
 		else
 		{
-			GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Green, FString::Printf(TEXT("Player 2 isn't hit")));
 			Player1->currentFrameOfAttack++;
 		}
 		GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Yellow, FString::Printf(TEXT("Attack Min Angle: %f"), Player1->Attacks[Player1->attackType].Parts[Player1->currentPartsIndex].minAngle));
@@ -116,17 +130,17 @@ void AFighterManager::Tick(float DeltaTime)
 			Player1->currentFrameOfAttack--;
 			Player1->SetActorLocation(Player1->GetActorLocation() + (toPlayer1 * (Player1->currentFrameOfAttack / 5)));
 		}
-		else Player1->State = AFighterPawn::STATE::Idle;
-	}
-	else if (Player1->State == AFighterPawn::STATE::Blocking)
-	{
-		if (Player2->State == AFighterPawn::STATE::Attacking)
+		else
 		{
-			Player2->State = AFighterPawn::STATE::Stunned;
-			Player2->currentFrameOfAttack = Player1->blockStunRate;
+			Player1->State = AFighterPawn::STATE::Idle;
+			Player1->InputID = AFighterPawn::INPUT::IDLE;
+			Player1->currentPartsIndex = 0;
+			Player1->attackType = AFighterPawn::ATTACK_TYPE::NONE;
+			bPlayer1IsHit = false;
 		}
 	}
 
+	///****************************************PLAYER 2****************************************
 	if (Player2->State == AFighterPawn::STATE::Moving)
 	{
 		Player2->SetActorRotation(toPlayer1.Rotation());
@@ -160,19 +174,31 @@ void AFighterManager::Tick(float DeltaTime)
 			(Player1->GetActorLocation() - Player2->GetActorLocation()).Size() < Player2->Attacks[Player2->attackType].Parts[Player2->currentPartsIndex].maxDist &&
 			Angle(Player2->GetActorForwardVector(), toPlayer1) < 90)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Red, FString::Printf(TEXT("Player is hit!")));
-			if (!bPlayer1IsHit)
+			if (Player1->State == AFighterPawn::STATE::Blocking && Angle(Player1->GetActorForwardVector(), toPlayer2) < Player1->BlockData.Angle &&
+				(Player2->GetActorLocation() - Player1->GetActorLocation()).Size() > Player1->BlockData.minDist &&
+				(Player2->GetActorLocation() - Player1->GetActorLocation()).Size() < Player1->BlockData.maxDist)
 			{
-				Player1->Health -= Player2->Attacks[Player2->attackType].Damage;
-				Player1->State = AFighterPawn::STATE::Stunned;
-				Player1->currentFrameOfAttack = Player2->Attacks[Player2->attackType].StunRate;
-				bPlayer1IsHit = true;
+				if (!bPlayer2IsHit)
+				{
+					Player2->State = AFighterPawn::STATE::Stunned;
+					Player2->currentFrameOfAttack = Player1->blockStunRate;
+					bPlayer2IsHit = true;
+				}
 			}
-			Player2->currentFrameOfAttack++;
+			else
+			{
+				if (!bPlayer1IsHit)
+				{
+					Player1->Health -= Player2->Attacks[Player2->attackType].Damage;
+					Player1->State = AFighterPawn::STATE::Stunned;
+					Player1->currentFrameOfAttack = Player2->Attacks[Player2->attackType].StunRate;
+					bPlayer1IsHit = true;
+				}
+				Player2->currentFrameOfAttack++;
+			}
 		}
 		else
 		{
-			GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Green, FString::Printf(TEXT("Player isn't hit")));
 			Player2->currentFrameOfAttack++;
 		}
 		GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Yellow, FString::Printf(TEXT("Attack Min Angle: %f"), Player2->Attacks[Player2->attackType].Parts[Player2->currentPartsIndex].minAngle));
@@ -185,9 +211,16 @@ void AFighterManager::Tick(float DeltaTime)
 		if (Player2->currentFrameOfAttack > 0)
 		{
 			Player2->currentFrameOfAttack--;
-			Player2->SetActorLocation(Player2->GetActorLocation() + (toPlayer2 * (Player2->currentFrameOfAttack/5)));
+			Player2->SetActorLocation(Player2->GetActorLocation() + (toPlayer2 * (Player2->currentFrameOfAttack / 5)));
 		}
-		else Player2->State = AFighterPawn::STATE::Idle;
+		else
+		{
+			Player2->State = AFighterPawn::STATE::Idle;
+			Player2->InputID = AFighterPawn::INPUT::IDLE;
+			Player2->currentPartsIndex = 0;
+			Player2->attackType = AFighterPawn::ATTACK_TYPE::NONE;
+			bPlayer2IsHit = false;
+		}
 	}
 
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Orange, FString::Printf(TEXT("Player 2 Angle: %f  -  Player 2 to Player 1 Distance: %f"), Angle(Player2->GetActorRightVector(), toPlayer1), (Player1->GetActorLocation() - Player2->GetActorLocation()).Size()));
