@@ -50,12 +50,11 @@ void AFighterManager::Tick(float DeltaTime)
 	Camera->SetActorLocation(FVector((Player1->GetActorLocation().X + Player2->GetActorLocation().X) * 0.5f, (Player1->GetActorLocation().Y + Player2->GetActorLocation().Y) * 0.5f, Player1->GetActorLocation().Z + Camera->Height));
 	Camera->SpringArm->TargetArmLength = FVector::Distance(Player1->GetActorLocation(), Player2->GetActorLocation());
 	if (Camera->SpringArm->TargetArmLength < Camera->closestDistance) Camera->SpringArm->TargetArmLength = Camera->closestDistance;
-	if (Player2->State != AFighterPawn::STATE::Stunned) Player2->PressedBlock();
-	/*if (Player2->State != AFighterPawn::STATE::Stunned)
+	if (Player2->State != AFighterPawn::STATE::Stunned)
 	{
 		if (t > 0)
 		{
-			switch (FMath::RandRange(4, 4))
+			switch (FMath::RandRange(0, 9))
 			{
 				case 0: Player2->PressedW(1); break;
 				case 1: Player2->PressedA(1); break;
@@ -71,8 +70,7 @@ void AFighterManager::Tick(float DeltaTime)
 			t = 250;
 		}
 		else t--;
-		//UE_LOG(LogTemp, Warning, TEXT("%i"), t)
-	}*/
+	}
 	FVector MiddleVector = Player2->GetActorLocation() - Player1->GetActorLocation();
 	FVector PerpendicularVector = { MiddleVector.Y,-MiddleVector.X,MiddleVector.Z };
 	PerpendicularVector.Normalize();
@@ -95,7 +93,6 @@ void AFighterManager::Tick(float DeltaTime)
 				Player1->currentPartsIndex++;
 			else
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Player2Hit is false"))
 				Player1->State = AFighterPawn::STATE::Idle;
 				Player1->InputID = AFighterPawn::INPUT::IDLE;
 				Player1->currentFrameOfAttack = 0;
@@ -115,12 +112,8 @@ void AFighterManager::Tick(float DeltaTime)
 				(Player1->GetActorLocation() - Player2->GetActorLocation()).Size() > Player2->BlockData.minDist &&
 				(Player1->GetActorLocation() - Player2->GetActorLocation()).Size() < Player2->BlockData.maxDist)
 			{
-				if (!bPlayer1IsHit)
-				{
-					Player1->State = AFighterPawn::STATE::Stunned;
-					Player1->currentFrameOfAttack = Player2->blockStunRate;
-					bPlayer1IsHit = true;
-				}
+				Player1->State = AFighterPawn::STATE::Stunned;
+				Player1->currentFrameOfAttack = Player2->blockStunRate;
 			}
 			else
 			{
@@ -156,7 +149,6 @@ void AFighterManager::Tick(float DeltaTime)
 			Player1->InputID = AFighterPawn::INPUT::IDLE;
 			Player1->currentPartsIndex = 0;
 			Player1->attackType = AFighterPawn::ATTACK_TYPE::NONE;
-			if (Player2->State != AFighterPawn::STATE::Attacking) bPlayer1IsHit = false;
 		}
 	}
 
@@ -198,13 +190,8 @@ void AFighterManager::Tick(float DeltaTime)
 				(Player2->GetActorLocation() - Player1->GetActorLocation()).Size() > Player1->BlockData.minDist &&
 				(Player2->GetActorLocation() - Player1->GetActorLocation()).Size() < Player1->BlockData.maxDist)
 			{
-				if (!bPlayer2IsHit)
-				{
-					Player2->State = AFighterPawn::STATE::Stunned;
-					Player2->currentFrameOfAttack = Player1->blockStunRate;
-					bPlayer2IsHit = true;
-					UE_LOG(LogTemp, Warning, TEXT("Player 1 blocked the attack"))
-				}
+				Player2->State = AFighterPawn::STATE::Stunned;
+				Player2->currentFrameOfAttack = Player1->blockStunRate;
 			}
 			else
 			{
@@ -240,7 +227,11 @@ void AFighterManager::Tick(float DeltaTime)
 			Player2->InputID = AFighterPawn::INPUT::IDLE;
 			Player2->currentPartsIndex = 0;
 			Player2->attackType = AFighterPawn::ATTACK_TYPE::NONE;
-			if (Player1->State != AFighterPawn::STATE::Attacking) bPlayer2IsHit = false;
+			/*During an attack, the test for detection will be done during attack frames. 
+			If the attack does hit an enemy, bPlayerXIsHit is set to true to avoid the attack be applied many times.
+			When the attack hits, the enemy is also stunned, meaning that this code will run.
+			Since we don't know how the stun was caused, we have to check and see that it wasn't caused by a normal attack.
+			If we don't do this, we mistakenly will set bPlayerXIsHit and allow the attack to be applied again.*/
 		}
 	}
 
