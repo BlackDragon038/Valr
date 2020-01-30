@@ -110,10 +110,10 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	uint8 attackType = 4;
 
-	int8 AxisW = 0;
-	int8 AxisA = 0;
-	int8 AxisS = 0;
-	int8 AxisD = 0;
+	bool W_Key = 0;
+	bool A_Key = 0;
+	bool S_Key = 0;
+	bool D_Key = 0;
 
 protected:
 	// Called when the game starts or when spawned

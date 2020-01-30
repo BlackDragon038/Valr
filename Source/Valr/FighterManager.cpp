@@ -50,10 +50,29 @@ void AFighterManager::Tick(float DeltaTime)
 	Camera->SetActorLocation(FVector((Player1->GetActorLocation().X + Player2->GetActorLocation().X) * 0.5f, (Player1->GetActorLocation().Y + Player2->GetActorLocation().Y) * 0.5f, Player1->GetActorLocation().Z + Camera->Height));
 	Camera->SpringArm->TargetArmLength = FVector::Distance(Player1->GetActorLocation(), Player2->GetActorLocation());
 	if (Camera->SpringArm->TargetArmLength < Camera->closestDistance) Camera->SpringArm->TargetArmLength = Camera->closestDistance;
-
-	if (Player2->State != AFighterPawn::STATE::Stunned) Player2->InputID = AFighterPawn::INPUT::Block;
-	if (Player2->State != AFighterPawn::STATE::Stunned) Player2->State = AFighterPawn::STATE::Blocking;
-
+	if (Player2->State != AFighterPawn::STATE::Stunned) Player2->PressedBlock();
+	/*if (Player2->State != AFighterPawn::STATE::Stunned)
+	{
+		if (t > 0)
+		{
+			switch (FMath::RandRange(4, 4))
+			{
+				case 0: Player2->PressedW(1); break;
+				case 1: Player2->PressedA(1); break;
+				case 2: Player2->PressedS(1); break;
+				case 3: Player2->PressedD(1); break;
+				case 4: Player2->PressedLight(); break;
+				case 5: Player2->PressedMedium(); break;
+				case 6: Player2->PressedHeavy(); break;
+				case 7: Player2->PressedSpecial(); break;
+				case 8: Player2->PressedBlock(); break;
+				case 9: Player2->ReleasedBlock(); break;
+			}
+			t = 250;
+		}
+		else t--;
+		//UE_LOG(LogTemp, Warning, TEXT("%i"), t)
+	}*/
 	FVector MiddleVector = Player2->GetActorLocation() - Player1->GetActorLocation();
 	FVector PerpendicularVector = { MiddleVector.Y,-MiddleVector.X,MiddleVector.Z };
 	PerpendicularVector.Normalize();
@@ -76,6 +95,7 @@ void AFighterManager::Tick(float DeltaTime)
 				Player1->currentPartsIndex++;
 			else
 			{
+				UE_LOG(LogTemp, Warning, TEXT("Player2Hit is false"))
 				Player1->State = AFighterPawn::STATE::Idle;
 				Player1->InputID = AFighterPawn::INPUT::IDLE;
 				Player1->currentFrameOfAttack = 0;
@@ -136,7 +156,7 @@ void AFighterManager::Tick(float DeltaTime)
 			Player1->InputID = AFighterPawn::INPUT::IDLE;
 			Player1->currentPartsIndex = 0;
 			Player1->attackType = AFighterPawn::ATTACK_TYPE::NONE;
-			bPlayer1IsHit = false;
+			if (Player2->State != AFighterPawn::STATE::Attacking) bPlayer1IsHit = false;
 		}
 	}
 
@@ -183,6 +203,7 @@ void AFighterManager::Tick(float DeltaTime)
 					Player2->State = AFighterPawn::STATE::Stunned;
 					Player2->currentFrameOfAttack = Player1->blockStunRate;
 					bPlayer2IsHit = true;
+					UE_LOG(LogTemp, Warning, TEXT("Player 1 blocked the attack"))
 				}
 			}
 			else
@@ -219,12 +240,12 @@ void AFighterManager::Tick(float DeltaTime)
 			Player2->InputID = AFighterPawn::INPUT::IDLE;
 			Player2->currentPartsIndex = 0;
 			Player2->attackType = AFighterPawn::ATTACK_TYPE::NONE;
-			bPlayer2IsHit = false;
+			if (Player1->State != AFighterPawn::STATE::Attacking) bPlayer2IsHit = false;
 		}
 	}
 
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Orange, FString::Printf(TEXT("Player 2 Angle: %f  -  Player 2 to Player 1 Distance: %f"), Angle(Player2->GetActorRightVector(), toPlayer1), (Player1->GetActorLocation() - Player2->GetActorLocation()).Size()));
-	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Orange, FString::Printf(TEXT("IsPlayerHit? %i"), bPlayer1IsHit));
+	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Orange, FString::Printf(TEXT("IsPlayerHit1? %i"), bPlayer1IsHit));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Blue, FString::Printf(TEXT("Player 2 State: %i"), Player2->State));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Blue, FString::Printf(TEXT("Player 2 InputID: %i"), Player2->InputID));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Orange, FString::Printf(TEXT("Player 2 CurrentFrameOfAttack: %i"), Player2->currentFrameOfAttack));
@@ -234,7 +255,7 @@ void AFighterManager::Tick(float DeltaTime)
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::White, FString::Printf(TEXT("FrameTime: %f----------------------FrameRate: %i"),DeltaTime,1000/DeltaTime));
 	
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Green, FString::Printf(TEXT("Player 1 Angle: %f  -  Player 1 to Player 2 Distance: %f"), Angle(Player1->GetActorRightVector(), toPlayer2), (Player2->GetActorLocation() - Player1->GetActorLocation()).Size()));
-	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Green, FString::Printf(TEXT("IsPlayerHit? %i"), bPlayer2IsHit));
+	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Green, FString::Printf(TEXT("IsPlayerHit2? %i"), bPlayer2IsHit));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Red, FString::Printf(TEXT("Player 1 State: %i"), Player1->State));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Red, FString::Printf(TEXT("Player 1 InputID: %i"), Player1->InputID));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Green, FString::Printf(TEXT("Player 1 CurrentFrameOfAttack: %i"), Player1->currentFrameOfAttack));

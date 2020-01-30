@@ -31,6 +31,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 roundTimer = 3600;
 
+	uint8 t = 250;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
