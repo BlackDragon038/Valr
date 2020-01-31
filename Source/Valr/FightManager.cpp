@@ -48,7 +48,7 @@ void AFightManager::Tick(float DeltaTime)
 	Camera->SetActorLocation(FVector((Player1->GetActorLocation().X + Player2->GetActorLocation().X) * 0.5f, (Player1->GetActorLocation().Y + Player2->GetActorLocation().Y) * 0.5f, Player1->GetActorLocation().Z + Camera->Height));
 	Camera->SpringArm->TargetArmLength = FVector::Distance(Player1->GetActorLocation(), Player2->GetActorLocation());
 	if (Camera->SpringArm->TargetArmLength < Camera->closestDistance) Camera->SpringArm->TargetArmLength = Camera->closestDistance;
-	if (Player2->State != AFighterPawn::STATE::Stunned)
+	/*if (Player2->State != AFighterPawn::STATE::Stunned)
 	{
 		if (t == 0)
 		{
@@ -72,8 +72,8 @@ void AFightManager::Tick(float DeltaTime)
 				case 9: Player2->ReleasedBlock(); break;
 			}
 		}
-	}
-	UE_LOG(LogTemp,Warning,TEXT("W:%i -- A:%i -- S:%i -- D:%i"),Player2->W_Key, Player2->A_Key, Player2->S_Key, Player2->D_Key)
+	}*/
+	UE_LOG(LogTemp,Warning,TEXT("W:%i -- A:%i -- S:%i -- D:%i"),Player2->UP_Key, Player2->LEFT_Key, Player2->DOWN_Key, Player2->RIGHT_Key)
 	FVector MiddleVector = Player2->GetActorLocation() - Player1->GetActorLocation();
 	FVector PerpendicularVector = { MiddleVector.Y,-MiddleVector.X,MiddleVector.Z };
 	PerpendicularVector.Normalize();
@@ -82,11 +82,6 @@ void AFightManager::Tick(float DeltaTime)
 	if (Player1->State == AFighterPawn::STATE::Moving)
 	{
 		Player1->SetActorRotation(FMath::Lerp(Player1->GetActorRotation(), toPlayer2.Rotation(), 0.5f));
-		if (Angle(Player1->GetActorForwardVector(), toPlayer2) < 90 &&
-			(Player1->InputID == AFighterPawn::INPUT::LEFT_DOWN || Player1->InputID == AFighterPawn::INPUT::LEFT || Player1->InputID == AFighterPawn::INPUT::UP_LEFT))
-		{
-			Player1->Stamina -= 2;
-		}
 	}
 	else if (Player1->State == AFighterPawn::STATE::Attacking)
 	{
@@ -159,11 +154,6 @@ void AFightManager::Tick(float DeltaTime)
 	if (Player2->State == AFighterPawn::STATE::Moving)
 	{
 		Player2->SetActorRotation(toPlayer1.Rotation());
-		if (Angle(Player2->GetActorForwardVector(), toPlayer1) < 90 &&
-			(Player2->InputID == AFighterPawn::INPUT::DOWN_RIGHT || Player2->InputID == AFighterPawn::INPUT::RIGHT || Player2->InputID == AFighterPawn::INPUT::RIGHT_UP))
-		{
-			Player2->Stamina -= 2;
-		}
 	}
 	else if (Player2->State == AFighterPawn::STATE::Attacking)
 	{
@@ -294,5 +284,16 @@ void AFightManager::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("Player1_Special", IE_Pressed, Player1, &AFighterPawn::PressedSpecial);
 	PlayerInputComponent->BindAction("Player1_Block", IE_Pressed, Player1, &AFighterPawn::PressedBlock);
 	PlayerInputComponent->BindAction("Player1_Block", IE_Released, Player1, &AFighterPawn::ReleasedBlock);
+
+	PlayerInputComponent->BindAxis("Player2_W", Player2, &AFighterPawn::PressedS);
+	PlayerInputComponent->BindAxis("Player2_A", Player2, &AFighterPawn::PressedD);
+	PlayerInputComponent->BindAxis("Player2_S", Player2, &AFighterPawn::PressedW);
+	PlayerInputComponent->BindAxis("Player2_D", Player2, &AFighterPawn::PressedA);
+	PlayerInputComponent->BindAction("Player2_Light", IE_Pressed, Player2, &AFighterPawn::PressedLight);
+	PlayerInputComponent->BindAction("Player2_Medium", IE_Pressed, Player2, &AFighterPawn::PressedMedium);
+	PlayerInputComponent->BindAction("Player2_Heavy", IE_Pressed, Player2, &AFighterPawn::PressedHeavy);
+	PlayerInputComponent->BindAction("Player2_Special", IE_Pressed, Player2, &AFighterPawn::PressedSpecial);
+	PlayerInputComponent->BindAction("Player2_Block", IE_Pressed, Player2, &AFighterPawn::PressedBlock);
+	PlayerInputComponent->BindAction("Player2_Block", IE_Released, Player2, &AFighterPawn::ReleasedBlock);
 }
 

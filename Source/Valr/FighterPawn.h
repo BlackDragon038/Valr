@@ -80,9 +80,6 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 		uint8 InputID;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		bool isFirstPlayer = true;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 Health = 255;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -107,12 +104,12 @@ public:
 		FBlockData BlockData;
 
 	UPROPERTY(BlueprintReadOnly)
-	uint8 attackType = 4;
+		uint8 attackType = 4;
 
-	bool W_Key = 0;
-	bool A_Key = 0;
-	bool S_Key = 0;
-	bool D_Key = 0;
+	bool UP_Key = 0;
+	bool LEFT_Key = 0;
+	bool DOWN_Key = 0;
+	bool RIGHT_Key = 0;
 
 protected:
 	// Called when the game starts or when spawned

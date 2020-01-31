@@ -44,15 +44,15 @@ void AFighterPawn::BeginPlay()
 void AFighterPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (W_Key == 1 && A_Key == 0 && S_Key == 0 && D_Key == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::UP;
-	else if (W_Key == 1 && A_Key == 1 && S_Key == 0 && D_Key == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::UP_LEFT;
-	else if (A_Key == 1 && W_Key == 0 && S_Key == 0 && D_Key == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::LEFT;
-	else if (A_Key == 1 && S_Key == 1 && W_Key == 0 && D_Key == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::LEFT_DOWN;
-	else if (S_Key == 1 && W_Key == 0 && D_Key == 0 && A_Key == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::DOWN;
-	else if (S_Key == 1 && D_Key == 1 && W_Key == 0 && A_Key == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::DOWN_RIGHT;
-	else if (D_Key == 1 && W_Key == 0 && A_Key == 0 && S_Key == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::RIGHT;
-	else if (D_Key == 1 && W_Key == 1 && A_Key == 0 && S_Key == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::RIGHT_UP;
-	else if (W_Key == 0 && A_Key == 0 && S_Key == 0 && D_Key == 0 && State != STATE::Attacking && State != STATE::Blocking && State != STATE::Stunned)
+	if (UP_Key == 1 && LEFT_Key == 0 && DOWN_Key == 0 && RIGHT_Key == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::UP;
+	else if (UP_Key == 1 && LEFT_Key == 1 && DOWN_Key == 0 && RIGHT_Key == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::UP_LEFT;
+	else if (LEFT_Key == 1 && UP_Key == 0 && DOWN_Key == 0 && RIGHT_Key == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::LEFT;
+	else if (LEFT_Key == 1 && DOWN_Key == 1 && UP_Key == 0 && RIGHT_Key == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::LEFT_DOWN;
+	else if (DOWN_Key == 1 && UP_Key == 0 && RIGHT_Key == 0 && LEFT_Key == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::DOWN;
+	else if (DOWN_Key == 1 && RIGHT_Key == 1 && UP_Key == 0 && LEFT_Key == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::DOWN_RIGHT;
+	else if (RIGHT_Key == 1 && UP_Key == 0 && LEFT_Key == 0 && DOWN_Key == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::RIGHT;
+	else if (RIGHT_Key == 1 && UP_Key == 1 && LEFT_Key == 0 && DOWN_Key == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::RIGHT_UP;
+	else if (UP_Key == 0 && LEFT_Key == 0 && DOWN_Key == 0 && RIGHT_Key == 0 && State != STATE::Attacking && State != STATE::Blocking && State != STATE::Stunned)
 	{
 		State = STATE::Idle;
 		InputID = INPUT::IDLE;
@@ -89,9 +89,10 @@ void AFighterPawn::PressedW(float Axis)
 		if (Axis > 0)
 		{
 			State = STATE::Moving;
-			SetActorLocation(GetActorLocation() + GetActorRightVector() * ((isFirstPlayer) ? -MovementSpeed : MovementSpeed));
+			SetActorLocation(GetActorLocation() + GetActorRightVector() * -MovementSpeed);
+
 		}
-		W_Key = static_cast<bool>(Axis);
+		UP_Key = static_cast<bool>(Axis);
 	}
 }
 
@@ -102,9 +103,10 @@ void AFighterPawn::PressedA(float Axis)
 		if (Axis > 0)
 		{
 			State = STATE::Moving;
-			SetActorLocation(GetActorLocation() + GetActorForwardVector() * ((isFirstPlayer) ? -MovementSpeed : MovementSpeed));
+			SetActorLocation(GetActorLocation() + GetActorForwardVector() * -MovementSpeed);
+			Stamina -= 2;
 		}
-		A_Key = static_cast<bool>(Axis);
+		LEFT_Key = static_cast<bool>(Axis);
 	}
 }
 
@@ -115,9 +117,9 @@ void AFighterPawn::PressedS(float Axis)
 		if (Axis > 0)
 		{
 			State = STATE::Moving;
-			SetActorLocation(GetActorLocation() + GetActorRightVector() * ((isFirstPlayer) ? MovementSpeed : -MovementSpeed));
+			SetActorLocation(GetActorLocation() + GetActorRightVector() * MovementSpeed);
 		}
-		S_Key = static_cast<bool>(Axis);
+		DOWN_Key = static_cast<bool>(Axis);
 	}
 }
 
@@ -128,9 +130,9 @@ void AFighterPawn::PressedD(float Axis)
 		if (Axis > 0)
 		{
 			State = STATE::Moving;
-			SetActorLocation(GetActorLocation() + GetActorForwardVector() * ((isFirstPlayer) ? MovementSpeed : -MovementSpeed));
+			SetActorLocation(GetActorLocation() + GetActorForwardVector() * MovementSpeed);
 		}
-		D_Key = static_cast<bool>(Axis);
+		RIGHT_Key = static_cast<bool>(Axis);
 	}
 }
 
