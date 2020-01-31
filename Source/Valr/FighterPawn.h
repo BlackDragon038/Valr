@@ -8,7 +8,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 
-#include <vector>
 #include "FighterPawn.generated.h"
 
 USTRUCT(BlueprintType)

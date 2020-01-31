@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "FighterManager.h"
+
+#include "FightManager.h"
 #include "DrawDebugHelpers.h"
 #include <cmath>
 #include <EngineGlobals.h>
@@ -9,15 +10,15 @@
 #include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
-AFighterManager::AFighterManager() 
+AFightManager::AFightManager()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+ 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 }
 
 // Called when the game starts or when spawned
-void AFighterManager::BeginPlay() 
+void AFightManager::BeginPlay()
 {
 	Super::BeginPlay();
 	if (!Player1 || !Player2 || !Camera)
@@ -30,14 +31,13 @@ void AFighterManager::BeginPlay()
 	AddTickPrerequisiteActor(Player2);
 }
 
-float AFighterManager::Angle(FVector a, FVector b)
+float AFightManager::Angle(FVector a, FVector b)
 {
-	return FMath::RadiansToDegrees(std::acos(FVector::DotProduct(a, b) / a.Size() * b.Size()));
-	
+	return FMath::RadiansToDegrees(std::acos(FVector::DotProduct(a, b)));
 }
 
 // Called every frame
-void AFighterManager::Tick(float DeltaTime) 
+void AFightManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	roundTimer -= 1;
@@ -45,20 +45,25 @@ void AFighterManager::Tick(float DeltaTime)
 	toPlayer1.Normalize();
 	FVector toPlayer2 = Player2->GetActorLocation() - Player1->GetActorLocation();
 	toPlayer2.Normalize();
-
 	Camera->SetActorLocation(FVector((Player1->GetActorLocation().X + Player2->GetActorLocation().X) * 0.5f, (Player1->GetActorLocation().Y + Player2->GetActorLocation().Y) * 0.5f, Player1->GetActorLocation().Z + Camera->Height));
 	Camera->SpringArm->TargetArmLength = FVector::Distance(Player1->GetActorLocation(), Player2->GetActorLocation());
 	if (Camera->SpringArm->TargetArmLength < Camera->closestDistance) Camera->SpringArm->TargetArmLength = Camera->closestDistance;
 	if (Player2->State != AFighterPawn::STATE::Stunned)
 	{
-		if (t > 0)
+		if (t == 0)
 		{
-			switch (FMath::RandRange(0, 9))
+			a = FMath::RandRange(0, 9);
+			t = 100;
+		}
+		else
+		{
+			t--;
+			switch (a)
 			{
-				case 0: Player2->PressedW(1); break;
-				case 1: Player2->PressedA(1); break;
-				case 2: Player2->PressedS(1); break;
-				case 3: Player2->PressedD(1); break;
+				case 0: Player2->PressedW(1); Player2->PressedA(0); Player2->PressedS(0); Player2->PressedD(0); break;
+				case 1: Player2->PressedW(0); Player2->PressedA(1); Player2->PressedS(0); Player2->PressedD(0); break;
+				case 2: Player2->PressedW(0); Player2->PressedA(0); Player2->PressedS(1); Player2->PressedD(0); break;
+				case 3: Player2->PressedW(0); Player2->PressedA(0); Player2->PressedS(0); Player2->PressedD(1); break;
 				case 4: Player2->PressedLight(); break;
 				case 5: Player2->PressedMedium(); break;
 				case 6: Player2->PressedHeavy(); break;
@@ -66,10 +71,9 @@ void AFighterManager::Tick(float DeltaTime)
 				case 8: Player2->PressedBlock(); break;
 				case 9: Player2->ReleasedBlock(); break;
 			}
-			t = 250;
 		}
-		else t--;
 	}
+	UE_LOG(LogTemp,Warning,TEXT("W:%i -- A:%i -- S:%i -- D:%i"),Player2->W_Key, Player2->A_Key, Player2->S_Key, Player2->D_Key)
 	FVector MiddleVector = Player2->GetActorLocation() - Player1->GetActorLocation();
 	FVector PerpendicularVector = { MiddleVector.Y,-MiddleVector.X,MiddleVector.Z };
 	PerpendicularVector.Normalize();
@@ -77,8 +81,8 @@ void AFighterManager::Tick(float DeltaTime)
 
 	if (Player1->State == AFighterPawn::STATE::Moving)
 	{
-		Player1->SetActorRotation(FMath::Lerp(Player1->GetActorRotation(),toPlayer2.Rotation(),0.5f));
-		if (Angle(Player1->GetActorForwardVector(), toPlayer2) < 90 && 
+		Player1->SetActorRotation(FMath::Lerp(Player1->GetActorRotation(), toPlayer2.Rotation(), 0.5f));
+		if (Angle(Player1->GetActorForwardVector(), toPlayer2) < 90 &&
 			(Player1->InputID == AFighterPawn::INPUT::LEFT_DOWN || Player1->InputID == AFighterPawn::INPUT::LEFT || Player1->InputID == AFighterPawn::INPUT::UP_LEFT))
 		{
 			Player1->Stamina -= 2;
@@ -169,7 +173,7 @@ void AFighterManager::Tick(float DeltaTime)
 				Player2->currentPartsIndex++;
 			else
 			{
-				
+
 				Player2->State = AFighterPawn::STATE::Idle;
 				Player2->InputID = AFighterPawn::INPUT::IDLE;
 				Player2->currentFrameOfAttack = 0;
@@ -226,7 +230,7 @@ void AFighterManager::Tick(float DeltaTime)
 			Player2->InputID = AFighterPawn::INPUT::IDLE;
 			Player2->currentPartsIndex = 0;
 			Player2->attackType = AFighterPawn::ATTACK_TYPE::NONE;
-			/*During an attack, the test for detection will be done during attack frames. 
+			/*During an attack, the test for detection will be done during attack frames.
 			If the attack does hit an enemy, bPlayerXIsHit is set to true to avoid the attack be applied many times.
 			When the attack hits, the enemy is also stunned, meaning that this code will run.
 			Since we don't know how the stun was caused, we have to check and see that it wasn't caused by a normal attack.
@@ -241,9 +245,9 @@ void AFighterManager::Tick(float DeltaTime)
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Orange, FString::Printf(TEXT("Player 2 CurrentFrameOfAttack: %i"), Player2->currentFrameOfAttack));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Orange, FString::Printf(TEXT("Player 2 CurrentPartsIndex: %i"), Player2->currentPartsIndex));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Blue, FString::Printf(TEXT("Player 2 AttackType: %i"), Player2->attackType));
-													   
-	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::White, FString::Printf(TEXT("FrameTime: %f----------------------FrameRate: %i"),DeltaTime,1000/DeltaTime));
-	
+
+	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::White, FString::Printf(TEXT("FrameTime: %f----------------------FrameRate: %i"), DeltaTime, 1000 / DeltaTime));
+
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Green, FString::Printf(TEXT("Player 1 Angle: %f  -  Player 1 to Player 2 Distance: %f"), Angle(Player1->GetActorRightVector(), toPlayer2), (Player2->GetActorLocation() - Player1->GetActorLocation()).Size()));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Green, FString::Printf(TEXT("IsPlayerHit2? %i"), bPlayer2IsHit));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Red, FString::Printf(TEXT("Player 1 State: %i"), Player1->State));
@@ -273,5 +277,22 @@ void AFighterManager::Tick(float DeltaTime)
 		1,
 		1,
 		1);
+}
+
+// Called to bind functionality to input
+void AFightManager::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	PlayerInputComponent->BindAxis("Player1_W", Player1, &AFighterPawn::PressedW);
+	PlayerInputComponent->BindAxis("Player1_A", Player1, &AFighterPawn::PressedA);
+	PlayerInputComponent->BindAxis("Player1_S", Player1, &AFighterPawn::PressedS);
+	PlayerInputComponent->BindAxis("Player1_D", Player1, &AFighterPawn::PressedD);
+	PlayerInputComponent->BindAction("Player1_Light", IE_Pressed, Player1, &AFighterPawn::PressedLight);
+	PlayerInputComponent->BindAction("Player1_Medium", IE_Pressed, Player1, &AFighterPawn::PressedMedium);
+	PlayerInputComponent->BindAction("Player1_Heavy", IE_Pressed, Player1, &AFighterPawn::PressedHeavy);
+	PlayerInputComponent->BindAction("Player1_Special", IE_Pressed, Player1, &AFighterPawn::PressedSpecial);
+	PlayerInputComponent->BindAction("Player1_Block", IE_Pressed, Player1, &AFighterPawn::PressedBlock);
+	PlayerInputComponent->BindAction("Player1_Block", IE_Released, Player1, &AFighterPawn::ReleasedBlock);
 }
 
