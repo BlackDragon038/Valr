@@ -73,7 +73,6 @@ void AFightManager::Tick(float DeltaTime)
 			}
 		}
 	}*/
-	UE_LOG(LogTemp,Warning,TEXT("W:%i -- A:%i -- S:%i -- D:%i"),Player2->UP_Key, Player2->LEFT_Key, Player2->DOWN_Key, Player2->RIGHT_Key)
 	FVector MiddleVector = Player2->GetActorLocation() - Player1->GetActorLocation();
 	FVector PerpendicularVector = { MiddleVector.Y,-MiddleVector.X,MiddleVector.Z };
 	PerpendicularVector.Normalize();

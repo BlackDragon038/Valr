@@ -24,9 +24,9 @@ void AFighterPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	State = STATE::Idle;
-	InputID = INPUT::IDLE;
-	attackType = ATTACK_TYPE::NONE;
+	State = Idle;
+	InputID = IDLE;
+	attackType = NONE;
 	unsigned int totalFrames = 0;
 	for (auto& a : Attacks)
 	{
@@ -57,8 +57,10 @@ void AFighterPawn::Tick(float DeltaTime)
 		State = STATE::Idle;
 		InputID = INPUT::IDLE;
 	}
-
 	if (State != STATE::Attacking && State != STATE::Blocking && Stamina < 255) Stamina += 1;
+
+	
+	
 	/*FVector EastVector(std::sin(FMath::DegreesToRadians(Angle)), std::cos(FMath::DegreesToRadians(Angle)), 0);
 	float offsetAngle = FMath::RadiansToDegrees(std::acos(FVector::DotProduct(EastVector, GetActorRightVector()) / GetActorRightVector().Size() * EastVector.Size()));
 	UE_LOG(LogTemp, Warning, TEXT("Angle: %f"), offsetAngle);
@@ -69,17 +71,6 @@ void AFighterPawn::Tick(float DeltaTime)
 void AFighterPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	
-	PlayerInputComponent->BindAxis("Player1_W", this, &AFighterPawn::PressedW);
-	PlayerInputComponent->BindAxis("Player1_A", this, &AFighterPawn::PressedA);
-	PlayerInputComponent->BindAxis("Player1_S", this, &AFighterPawn::PressedS);
-	PlayerInputComponent->BindAxis("Player1_D", this, &AFighterPawn::PressedD);
-	PlayerInputComponent->BindAction("Player1_Light", IE_Pressed,  this, &AFighterPawn::PressedLight);
-	PlayerInputComponent->BindAction("Player1_Medium", IE_Pressed,  this, &AFighterPawn::PressedMedium);
-	PlayerInputComponent->BindAction("Player1_Heavy", IE_Pressed,  this, &AFighterPawn::PressedHeavy);
-	PlayerInputComponent->BindAction("Player1_Special", IE_Pressed,  this, &AFighterPawn::PressedSpecial);
-	PlayerInputComponent->BindAction("Player1_Block", IE_Pressed, this, &AFighterPawn::PressedBlock);
-	PlayerInputComponent->BindAction("Player1_Block", IE_Released, this, &AFighterPawn::ReleasedBlock);
 }
 
 void AFighterPawn::PressedW(float Axis)  
@@ -90,9 +81,13 @@ void AFighterPawn::PressedW(float Axis)
 		{
 			State = STATE::Moving;
 			SetActorLocation(GetActorLocation() + GetActorRightVector() * -MovementSpeed);
-
 		}
 		UP_Key = static_cast<bool>(Axis);
+
+		if (KeyW == KEY_STATE::RESET && UP_Key) KeyW = KEY_STATE::PRESSED_ONCE;
+		else if (KeyW == KEY_STATE::PRESSED_ONCE && !UP_Key) KeyW = KEY_STATE::RELEASED_AFTER_PRESSING;
+		else if (KeyW == KEY_STATE::RELEASED_AFTER_PRESSING && UP_Key) KeyW = KEY_STATE::PRESSED_TWICE;
+		else if (KeyW == KEY_STATE::PRESSED_TWICE && !UP_Key) KeyW = KEY_STATE::RESET;
 	}
 }
 
@@ -104,9 +99,14 @@ void AFighterPawn::PressedA(float Axis)
 		{
 			State = STATE::Moving;
 			SetActorLocation(GetActorLocation() + GetActorForwardVector() * -MovementSpeed);
-			Stamina -= 2;
+			if (Stamina > 2) Stamina -= 2;
 		}
 		LEFT_Key = static_cast<bool>(Axis);
+
+		if (KeyA == KEY_STATE::RESET && LEFT_Key) { KeyA = KEY_STATE::PRESSED_ONCE; UE_LOG(LogTemp, Warning, TEXT("PRESSED_ONCE")) }
+		else if (KeyA == KEY_STATE::PRESSED_ONCE && !LEFT_Key) { UE_LOG(LogTemp, Warning, TEXT("RELEASED")); KeyA = KEY_STATE::RELEASED_AFTER_PRESSING; }
+		else if (KeyA == KEY_STATE::RELEASED_AFTER_PRESSING && LEFT_Key) { UE_LOG(LogTemp, Warning, TEXT("PRESSED_TWICE")); KeyA = KEY_STATE::PRESSED_TWICE; }
+		else if (KeyA == KEY_STATE::PRESSED_TWICE && !LEFT_Key) { UE_LOG(LogTemp, Warning, TEXT("RESET"));  KeyA = KEY_STATE::RESET; }
 	}
 }
 
@@ -120,6 +120,11 @@ void AFighterPawn::PressedS(float Axis)
 			SetActorLocation(GetActorLocation() + GetActorRightVector() * MovementSpeed);
 		}
 		DOWN_Key = static_cast<bool>(Axis);
+
+		if (KeyS == KEY_STATE::RESET && DOWN_Key) KeyS = KEY_STATE::PRESSED_ONCE;
+		else if (KeyS == KEY_STATE::PRESSED_ONCE && !DOWN_Key) KeyS = KEY_STATE::RELEASED_AFTER_PRESSING;
+		else if (KeyS == KEY_STATE::RELEASED_AFTER_PRESSING && DOWN_Key) KeyS = KEY_STATE::PRESSED_TWICE;
+		else if (KeyS == KEY_STATE::PRESSED_TWICE && !DOWN_Key) KeyS = KEY_STATE::RESET;
 	}
 }
 
@@ -133,6 +138,11 @@ void AFighterPawn::PressedD(float Axis)
 			SetActorLocation(GetActorLocation() + GetActorForwardVector() * MovementSpeed);
 		}
 		RIGHT_Key = static_cast<bool>(Axis);
+
+		if (KeyD == KEY_STATE::RESET && RIGHT_Key) KeyD = KEY_STATE::PRESSED_ONCE;
+		else if (KeyD == KEY_STATE::PRESSED_ONCE && !RIGHT_Key) KeyD = KEY_STATE::RELEASED_AFTER_PRESSING;
+		else if (KeyD == KEY_STATE::RELEASED_AFTER_PRESSING && RIGHT_Key) KeyD = KEY_STATE::PRESSED_TWICE;
+		else if (KeyD == KEY_STATE::PRESSED_TWICE && !RIGHT_Key) KeyD = KEY_STATE::RESET;
 	}
 }
 
@@ -143,7 +153,7 @@ void AFighterPawn::PressedLight()
 		State = STATE::Attacking;
 		InputID = INPUT::Light;
 		attackType = ATTACK_TYPE::LIGHT;
-		Stamina -= 20;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
+		if (Stamina > 20) Stamina -= 20;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
 	}
 }
 
@@ -154,7 +164,7 @@ void AFighterPawn::PressedMedium()
 		State = STATE::Attacking;
 		InputID = INPUT::Medium;
 		attackType = ATTACK_TYPE::MEDIUM;
-		Stamina -= 45;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
+		if (Stamina > 45) Stamina -= 45;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
 	}
 }
 
@@ -165,34 +175,34 @@ void AFighterPawn::PressedHeavy()
 		State = STATE::Attacking;
 		InputID = INPUT::Heavy;
 		attackType = ATTACK_TYPE::HEAVY;
-		Stamina -= 70;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
+		if (Stamina > 70) Stamina -= 70;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
 	}
 }
 
 void AFighterPawn::PressedSpecial() 
 {
-	if (State != STATE::Attacking && State != STATE::Stunned && State != STATE::Blocking && Stamina >= 100)
+	if (State != STATE::Attacking && State != STATE::Stunned && State != STATE::Blocking &&  Stamina >= 100)
 	{
 		State = STATE::Attacking;
 		InputID = INPUT::Special;
 		attackType = ATTACK_TYPE::SPECIAL;
-		Stamina -= 100;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
+		if (Stamina > 100) Stamina -= 100;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
 	}
 }
 
 void AFighterPawn::PressedBlock()
 {
-	if (State != STATE::Attacking && State != STATE::Stunned)
+	if (State != STATE::Attacking && State != STATE::Stunned && State != STATE::Stepping)
 	{
 		State = STATE::Blocking;
 		InputID = INPUT::Block;
-		Stamina -= 25;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
+		if (Stamina > 25) Stamina -= 25;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
 	}
 }
 
 void AFighterPawn::ReleasedBlock()
 {
-	if (State != STATE::Attacking && State != STATE::Stunned)
+	if (State != STATE::Attacking && State != STATE::Stunned && State != STATE::Stepping)
 	{
 		State = STATE::Idle;
 		InputID = INPUT::IDLE;

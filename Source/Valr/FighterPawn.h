@@ -68,6 +68,10 @@ public:
 
 	enum ATTACK_TYPE { LIGHT, MEDIUM, HEAVY, SPECIAL, NONE};
 
+	enum STATE { Idle, Moving, Blocking, Attacking, Stunned, Stepping };
+
+	enum KEY_STATE {RESET, PRESSED_ONCE, RELEASED_AFTER_PRESSING, PRESSED_TWICE};
+
 	// Sets default values for this pawn's properties
 	AFighterPawn();
 
@@ -89,8 +93,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 blockStunRate = 25;
 
-	enum STATE { Idle, Moving, Blocking, Attacking, Stunned };
-
 	UPROPERTY(BlueprintReadWrite)
 		uint8 State;
 
@@ -105,6 +107,14 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 		uint8 attackType = 4;
+
+	bool bStepping = false;
+	float steppingSpeed = 0;
+	uint8 steppingFrameTime = 0;
+	uint8 KeyW = 0;
+	uint8 KeyA = 0;
+	uint8 KeyS = 0;
+	uint8 KeyD = 0;
 
 	bool UP_Key = 0;
 	bool LEFT_Key = 0;
