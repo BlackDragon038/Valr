@@ -44,27 +44,132 @@ void AFighterPawn::BeginPlay()
 void AFighterPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (UP_Key == 1 && LEFT_Key == 0 && DOWN_Key == 0 && RIGHT_Key == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::UP;
-	else if (UP_Key == 1 && LEFT_Key == 1 && DOWN_Key == 0 && RIGHT_Key == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::UP_LEFT;
-	else if (LEFT_Key == 1 && UP_Key == 0 && DOWN_Key == 0 && RIGHT_Key == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::LEFT;
-	else if (LEFT_Key == 1 && DOWN_Key == 1 && UP_Key == 0 && RIGHT_Key == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::LEFT_DOWN;
-	else if (DOWN_Key == 1 && UP_Key == 0 && RIGHT_Key == 0 && LEFT_Key == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::DOWN;
-	else if (DOWN_Key == 1 && RIGHT_Key == 1 && UP_Key == 0 && LEFT_Key == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::DOWN_RIGHT;
-	else if (RIGHT_Key == 1 && UP_Key == 0 && LEFT_Key == 0 && DOWN_Key == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::RIGHT;
-	else if (RIGHT_Key == 1 && UP_Key == 1 && LEFT_Key == 0 && DOWN_Key == 0 && InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light) InputID = INPUT::RIGHT_UP;
-	else if (UP_Key == 0 && LEFT_Key == 0 && DOWN_Key == 0 && RIGHT_Key == 0 && State != STATE::Attacking && State != STATE::Blocking && State != STATE::Stunned)
+	if (UP_Key == 1 && LEFT_Key == 0 && DOWN_Key == 0 && RIGHT_Key == 0 && 
+		InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light && State != STATE::Stepping) InputID = INPUT::UP;
+	else if (UP_Key == 1 && LEFT_Key == 1 && DOWN_Key == 0 && RIGHT_Key == 0 && 
+		InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light && State != STATE::Stepping) InputID = INPUT::UP_LEFT;
+	else if (LEFT_Key == 1 && UP_Key == 0 && DOWN_Key == 0 && RIGHT_Key == 0 && 
+		InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light && State != STATE::Stepping) InputID = INPUT::LEFT;
+	else if (LEFT_Key == 1 && DOWN_Key == 1 && UP_Key == 0 && RIGHT_Key == 0 && 
+		InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light && State != STATE::Stepping) InputID = INPUT::LEFT_DOWN;
+	else if (DOWN_Key == 1 && UP_Key == 0 && RIGHT_Key == 0 && LEFT_Key == 0 && 
+		InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light && State != STATE::Stepping) InputID = INPUT::DOWN;
+	else if (DOWN_Key == 1 && RIGHT_Key == 1 && UP_Key == 0 && LEFT_Key == 0 && 
+		InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light && State != STATE::Stepping) InputID = INPUT::DOWN_RIGHT;
+	else if (RIGHT_Key == 1 && UP_Key == 0 && LEFT_Key == 0 && DOWN_Key == 0 && 
+		InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light && State != STATE::Stepping) InputID = INPUT::RIGHT;
+	else if (RIGHT_Key == 1 && UP_Key == 1 && LEFT_Key == 0 && DOWN_Key == 0 && 
+		InputID != INPUT::Block && InputID != INPUT::Special && InputID != INPUT::Heavy && InputID != INPUT::Medium && InputID != INPUT::Light && State != STATE::Stepping) InputID = INPUT::RIGHT_UP;
+	else if (UP_Key == 0 && LEFT_Key == 0 && DOWN_Key == 0 && RIGHT_Key == 0 && 
+		State != STATE::Attacking && State != STATE::Blocking && State != STATE::Stunned && State != STATE::Stepping)
 	{
 		State = STATE::Idle;
 		InputID = INPUT::IDLE;
 	}
-	if (State != STATE::Attacking && State != STATE::Blocking && Stamina < 255) Stamina += 1;
 
-	
-	
-	/*FVector EastVector(std::sin(FMath::DegreesToRadians(Angle)), std::cos(FMath::DegreesToRadians(Angle)), 0);
-	float offsetAngle = FMath::RadiansToDegrees(std::acos(FVector::DotProduct(EastVector, GetActorRightVector()) / GetActorRightVector().Size() * EastVector.Size()));
-	UE_LOG(LogTemp, Warning, TEXT("Angle: %f"), offsetAngle);
-	currentVector = FVector(GetActorRightVector().X *std::sin(FMath::DegreesToRadians(Angle)), GetActorRightVector().Y * std::cos(FMath::DegreesToRadians(Angle)),0);*/
+	if (State != STATE::Attacking && State != STATE::Blocking && Stamina < 255 && State != STATE::Stepping)
+		Stamina += 1;
+
+	if (steppingFrameTime > 0)
+	{
+		steppingFrameTime--;
+		if (KeyW == KEY_STATE::PRESSED_TWICE && !bDoubleTapW)
+		{
+			steppingSpeed = 200;
+			bDoubleTapW = true;
+			Stamina -= 100;
+		}
+		if (KeyA == KEY_STATE::PRESSED_TWICE && !bDoubleTapA)
+		{
+			steppingSpeed = 200;
+			bDoubleTapA = true;
+			Stamina -= 100;
+		}
+		if (KeyS == KEY_STATE::PRESSED_TWICE && !bDoubleTapS)
+		{
+			steppingSpeed = 200;
+			bDoubleTapS = true;
+			Stamina -= 100;
+		}
+		if (KeyD == KEY_STATE::PRESSED_TWICE && !bDoubleTapD)
+		{
+			steppingSpeed = 200;
+			bDoubleTapD = true;
+			Stamina -= 100;
+		}
+	}
+	else
+	{
+		KeyW = KEY_STATE::RESET;
+		KeyA = KEY_STATE::RESET;
+		KeyS = KEY_STATE::RESET;
+		KeyD = KEY_STATE::RESET;
+	}
+
+	if (bDoubleTapW)
+	{
+		if (steppingSpeed >= 10)
+		{
+			State = STATE::Stepping;
+			steppingSpeed -= 10;
+			SetActorLocation(GetActorLocation() + GetActorRightVector() * -((float)steppingSpeed / 10.f));
+		}
+		else
+		{
+			bDoubleTapW = false;
+			State = STATE::Idle;
+			KeyW = KEY_STATE::RESET;
+			UP_Key = false;
+		}
+	}
+	else if (bDoubleTapA)
+	{
+		if (steppingSpeed >= sideStepSpeed)
+		{
+			State = STATE::Stepping;
+			steppingSpeed -= sideStepSpeed;
+			SetActorLocation(GetActorLocation() + GetActorForwardVector() * -((float)steppingSpeed / 10.f));
+		}
+		else
+		{
+			bDoubleTapA = false;
+			State = STATE::Idle;
+			KeyA = KEY_STATE::RESET;
+			LEFT_Key = false;
+		}
+	}
+	else if (bDoubleTapS)
+	{
+		if (steppingSpeed >= sideStepSpeed)
+		{
+			State = STATE::Stepping;
+			steppingSpeed -= sideStepSpeed;
+			SetActorLocation(GetActorLocation() + GetActorRightVector() * ((float)steppingSpeed / 10.f));
+		}
+		else
+		{
+			bDoubleTapS = false;
+			State = STATE::Idle;
+			KeyS = KEY_STATE::RESET;
+			DOWN_Key = false;
+		}
+	}
+	else if (bDoubleTapD)
+	{
+		if (steppingSpeed >= sideStepSpeed)
+		{
+			State = STATE::Stepping;
+			steppingSpeed -= sideStepSpeed;
+			SetActorLocation(GetActorLocation() + GetActorForwardVector() * ((float)steppingSpeed / 10.f));
+		}
+		else
+		{
+			bDoubleTapD = false;
+			State = STATE::Idle;
+			KeyD = KEY_STATE::RESET;
+			RIGHT_Key = false;
+		}
+	}
 }
 
 // Called to bind functionality to input
@@ -73,82 +178,230 @@ void AFighterPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-void AFighterPawn::PressedW(float Axis)  
+void AFighterPawn::AxisW(float Axis)
 {
-	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Stunned && Stamina > 10)
+	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Stunned && Stamina > 10 && State != STATE::Stepping)
 	{
-		if (Axis > 0)
-		{
-			State = STATE::Moving;
-			SetActorLocation(GetActorLocation() + GetActorRightVector() * -MovementSpeed);
-		}
 		UP_Key = static_cast<bool>(Axis);
 
-		if (KeyW == KEY_STATE::RESET && UP_Key) KeyW = KEY_STATE::PRESSED_ONCE;
-		else if (KeyW == KEY_STATE::PRESSED_ONCE && !UP_Key) KeyW = KEY_STATE::RELEASED_AFTER_PRESSING;
-		else if (KeyW == KEY_STATE::RELEASED_AFTER_PRESSING && UP_Key) KeyW = KEY_STATE::PRESSED_TWICE;
-		else if (KeyW == KEY_STATE::PRESSED_TWICE && !UP_Key) KeyW = KEY_STATE::RESET;
+		if (UP_Key)
+		{
+			SetActorLocation(GetActorLocation() + GetActorRightVector() * -MovementSpeed);
+			State = STATE::Moving;
+		}
+
+		if (InputID == INPUT::UP && Stamina > 100)
+		{
+			if (KeyW == KEY_STATE::RESET && UP_Key)
+			{
+				KeyW = KEY_STATE::PRESSED_ONCE;
+				steppingFrameTime = 10;
+			}
+			else if (KeyW == KEY_STATE::PRESSED_ONCE && !UP_Key)
+				KeyW = KEY_STATE::RELEASED;
+			else if (KeyW == KEY_STATE::RELEASED && UP_Key)
+			{
+				KeyW = KEY_STATE::PRESSED_TWICE;
+			}
+		}
 	}
 }
 
-void AFighterPawn::PressedA(float Axis)
+void AFighterPawn::AxisA(float Axis)
 {
-	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Stunned && Stamina > 10)
+	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Stunned && Stamina > 10 && State != STATE::Stepping && Stamina > 25)
 	{
-		if (Axis > 0)
-		{
-			State = STATE::Moving;
-			SetActorLocation(GetActorLocation() + GetActorForwardVector() * -MovementSpeed);
-			if (Stamina > 2) Stamina -= 2;
-		}
 		LEFT_Key = static_cast<bool>(Axis);
 
-		if (KeyA == KEY_STATE::RESET && LEFT_Key) { KeyA = KEY_STATE::PRESSED_ONCE; UE_LOG(LogTemp, Warning, TEXT("PRESSED_ONCE")) }
-		else if (KeyA == KEY_STATE::PRESSED_ONCE && !LEFT_Key) { UE_LOG(LogTemp, Warning, TEXT("RELEASED")); KeyA = KEY_STATE::RELEASED_AFTER_PRESSING; }
-		else if (KeyA == KEY_STATE::RELEASED_AFTER_PRESSING && LEFT_Key) { UE_LOG(LogTemp, Warning, TEXT("PRESSED_TWICE")); KeyA = KEY_STATE::PRESSED_TWICE; }
-		else if (KeyA == KEY_STATE::PRESSED_TWICE && !LEFT_Key) { UE_LOG(LogTemp, Warning, TEXT("RESET"));  KeyA = KEY_STATE::RESET; }
+		if (LEFT_Key)
+		{
+			Stamina -= 2;
+			SetActorLocation(GetActorLocation() + GetActorForwardVector() * -MovementSpeed);
+			State = STATE::Moving;
+		}
+
+		if (InputID == INPUT::LEFT && Stamina > 100)
+		{
+			if (KeyA == KEY_STATE::RESET && LEFT_Key)
+			{
+				KeyA = KEY_STATE::PRESSED_ONCE;
+				steppingFrameTime = 10;
+			}
+			else if (KeyA == KEY_STATE::PRESSED_ONCE && !LEFT_Key)
+				KeyA = KEY_STATE::RELEASED;
+			else if (KeyA == KEY_STATE::RELEASED && LEFT_Key)
+			{
+				KeyA = KEY_STATE::PRESSED_TWICE;
+			}
+		}
 	}
 }
 
-void AFighterPawn::PressedS(float Axis)
+void AFighterPawn::AxisS(float Axis)
 {
-	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Stunned && Stamina > 10)
+	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Stunned && Stamina > 10 && State != STATE::Stepping)
 	{
-		if (Axis > 0)
-		{
-			State = STATE::Moving;
-			SetActorLocation(GetActorLocation() + GetActorRightVector() * MovementSpeed);
-		}
 		DOWN_Key = static_cast<bool>(Axis);
 
-		if (KeyS == KEY_STATE::RESET && DOWN_Key) KeyS = KEY_STATE::PRESSED_ONCE;
-		else if (KeyS == KEY_STATE::PRESSED_ONCE && !DOWN_Key) KeyS = KEY_STATE::RELEASED_AFTER_PRESSING;
-		else if (KeyS == KEY_STATE::RELEASED_AFTER_PRESSING && DOWN_Key) KeyS = KEY_STATE::PRESSED_TWICE;
-		else if (KeyS == KEY_STATE::PRESSED_TWICE && !DOWN_Key) KeyS = KEY_STATE::RESET;
+		if (DOWN_Key)
+		{
+			SetActorLocation(GetActorLocation() + GetActorRightVector() * MovementSpeed);
+			State = STATE::Moving;
+		}
+
+		if (InputID == INPUT::DOWN && Stamina > 100)
+		{
+			if (KeyS == KEY_STATE::RESET && DOWN_Key)
+			{
+				KeyS = KEY_STATE::PRESSED_ONCE;
+				steppingFrameTime = 10;
+			}
+			else if (KeyS == KEY_STATE::PRESSED_ONCE && !DOWN_Key)
+				KeyS = KEY_STATE::RELEASED;
+			else if (KeyS == KEY_STATE::RELEASED && DOWN_Key)
+			{
+				KeyS = KEY_STATE::PRESSED_TWICE;
+			}
+		}
 	}
 }
 
-void AFighterPawn::PressedD(float Axis) 
+void AFighterPawn::AxisD(float Axis)
 {
-	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Stunned && Stamina > 10)
+	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Stunned && Stamina > 10 && State != STATE::Stepping)
 	{
-		if (Axis > 0)
-		{
-			State = STATE::Moving;
-			SetActorLocation(GetActorLocation() + GetActorForwardVector() * MovementSpeed);
-		}
 		RIGHT_Key = static_cast<bool>(Axis);
 
-		if (KeyD == KEY_STATE::RESET && RIGHT_Key) KeyD = KEY_STATE::PRESSED_ONCE;
-		else if (KeyD == KEY_STATE::PRESSED_ONCE && !RIGHT_Key) KeyD = KEY_STATE::RELEASED_AFTER_PRESSING;
-		else if (KeyD == KEY_STATE::RELEASED_AFTER_PRESSING && RIGHT_Key) KeyD = KEY_STATE::PRESSED_TWICE;
-		else if (KeyD == KEY_STATE::PRESSED_TWICE && !RIGHT_Key) KeyD = KEY_STATE::RESET;
+		if (RIGHT_Key)
+		{
+			SetActorLocation(GetActorLocation() + GetActorForwardVector() * MovementSpeed);
+			State = STATE::Moving;
+		}
+
+		if (InputID == INPUT::RIGHT && Stamina > 100)
+		{
+			if (KeyD == KEY_STATE::RESET && RIGHT_Key)
+			{
+				KeyD = KEY_STATE::PRESSED_ONCE;
+				steppingFrameTime = 10;
+			}
+			else if (KeyD == KEY_STATE::PRESSED_ONCE && !RIGHT_Key)
+				KeyD = KEY_STATE::RELEASED;
+			else if (KeyD == KEY_STATE::RELEASED && RIGHT_Key)
+			{
+				KeyD = KEY_STATE::PRESSED_TWICE;
+			}
+		}
+	}
+}
+
+void AFighterPawn::PressedW()  
+{
+	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Stunned && Stamina > 10 && State != STATE::Stepping)
+	{
+		UP_Key = true;
+		DOWN_Key = false;
+		if (KeyW == KEY_STATE::RESET)
+		{
+			KeyW = KEY_STATE::PRESSED_ONCE;
+			steppingFrameTime = 15;
+		}
+		else if (KeyW == KEY_STATE::PRESSED_ONCE)
+		{
+			KeyW = KEY_STATE::PRESSED_TWICE;
+		}
+	}
+}
+
+void AFighterPawn::PressedA()
+{
+	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Stunned && Stamina > 10 && State != STATE::Stepping)
+	{
+		LEFT_Key = true;
+		RIGHT_Key = false;
+		if (KeyA == KEY_STATE::RESET)
+		{
+			KeyA = KEY_STATE::PRESSED_ONCE;
+			steppingFrameTime = 15;
+		}
+		else if (KeyA == KEY_STATE::PRESSED_ONCE)
+		{
+			KeyA = KEY_STATE::PRESSED_TWICE;
+		}
+	}
+}
+
+void AFighterPawn::PressedS()
+{
+	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Stunned && Stamina > 10 && State != STATE::Stepping)
+	{
+		DOWN_Key = true;
+		UP_Key = false;
+		if (KeyS == KEY_STATE::RESET)
+		{
+			KeyS = KEY_STATE::PRESSED_ONCE;
+			steppingFrameTime = 15;
+		}
+		else if (KeyS == KEY_STATE::PRESSED_ONCE)
+		{
+			KeyS = KEY_STATE::PRESSED_TWICE;
+		}
+	}
+}
+
+void AFighterPawn::PressedD() 
+{
+	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Stunned && Stamina > 10 && State != STATE::Stepping)
+	{
+		RIGHT_Key = true;
+		LEFT_Key = false;
+		if (KeyD == KEY_STATE::RESET)
+		{
+			KeyD = KEY_STATE::PRESSED_ONCE;
+			steppingFrameTime = 15;
+		}
+		else if (KeyD == KEY_STATE::PRESSED_ONCE)
+		{
+			KeyD = KEY_STATE::PRESSED_TWICE;
+		}
+	}
+}
+
+void AFighterPawn::ReleasedW()
+{
+	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Stunned && Stamina > 10 && State != STATE::Stepping)
+	{
+		UP_Key = false;
+	}
+}
+
+void AFighterPawn::ReleasedA()
+{
+	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Stunned && Stamina > 10 && State != STATE::Stepping)
+	{
+		LEFT_Key = false;
+	}
+}
+
+void AFighterPawn::ReleasedS()
+{
+	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Stunned && Stamina > 10 && State != STATE::Stepping)
+	{
+		DOWN_Key = false;
+	}
+}
+
+void AFighterPawn::ReleasedD()
+{
+	if (State != STATE::Attacking && State != STATE::Blocking && State != STATE::Stunned && Stamina > 10 && State != STATE::Stepping)
+	{
+		RIGHT_Key = false;
 	}
 }
 
 void AFighterPawn::PressedLight() 
 {
-	if (State != STATE::Attacking && State != STATE::Stunned && State != STATE::Blocking && Stamina >= 20)
+	if (State != STATE::Attacking && State != STATE::Stunned && State != STATE::Blocking && Stamina >= 20 && State != STATE::Stepping)
 	{
 		State = STATE::Attacking;
 		InputID = INPUT::Light;
@@ -159,7 +412,7 @@ void AFighterPawn::PressedLight()
 
 void AFighterPawn::PressedMedium() 
 {
-	if (State != STATE::Attacking && State != STATE::Stunned && State != STATE::Blocking && Stamina >= 45)
+	if (State != STATE::Attacking && State != STATE::Stunned && State != STATE::Blocking && Stamina >= 45 && State != STATE::Stepping)
 	{
 		State = STATE::Attacking;
 		InputID = INPUT::Medium;
@@ -170,7 +423,7 @@ void AFighterPawn::PressedMedium()
 
 void AFighterPawn::PressedHeavy() 
 {
-	if (State != STATE::Attacking && State != STATE::Stunned && State != STATE::Blocking && Stamina >= 70)
+	if (State != STATE::Attacking && State != STATE::Stunned && State != STATE::Blocking && Stamina >= 70 && State != STATE::Stepping)
 	{
 		State = STATE::Attacking;
 		InputID = INPUT::Heavy;
@@ -181,7 +434,7 @@ void AFighterPawn::PressedHeavy()
 
 void AFighterPawn::PressedSpecial() 
 {
-	if (State != STATE::Attacking && State != STATE::Stunned && State != STATE::Blocking &&  Stamina >= 100)
+	if (State != STATE::Attacking && State != STATE::Stunned && State != STATE::Blocking &&  Stamina >= 100 && State != STATE::Stepping)
 	{
 		State = STATE::Attacking;
 		InputID = INPUT::Special;
@@ -206,5 +459,28 @@ void AFighterPawn::ReleasedBlock()
 	{
 		State = STATE::Idle;
 		InputID = INPUT::IDLE;
+	}
+}
+
+void AFighterPawn::AxisBlock(float Axis)
+{
+	if (State != STATE::Attacking && State != STATE::Stunned && State != STATE::Stepping)
+	{
+		if (Axis > 0)
+		{
+			State = STATE::Blocking;
+			InputID = INPUT::Block;
+			if (InputID != INPUT::Block)
+				if (Stamina > 25) 
+						Stamina -= 25;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
+		}
+		else if (Axis < 1)
+		{
+			if (InputID == INPUT::Block)
+			{
+				State = STATE::Idle;
+				InputID = INPUT::IDLE;
+			}
+		}
 	}
 }

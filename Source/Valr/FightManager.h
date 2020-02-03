@@ -33,7 +33,7 @@ public:
 		int32 roundTimer = 3600;
 
 	uint8 t = 100;
-	uint8 a = 0;
+	uint8 n = 0;
 
 protected:
 	// Called when the game starts or when spawned

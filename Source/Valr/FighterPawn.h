@@ -70,7 +70,7 @@ public:
 
 	enum STATE { Idle, Moving, Blocking, Attacking, Stunned, Stepping };
 
-	enum KEY_STATE {RESET, PRESSED_ONCE, RELEASED_AFTER_PRESSING, PRESSED_TWICE};
+	enum KEY_STATE { RESET, RELEASED, PRESSED_ONCE, PRESSED_TWICE };
 
 	// Sets default values for this pawn's properties
 	AFighterPawn();
@@ -88,6 +88,8 @@ public:
 		uint8 Health = 255;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 MovementSpeed = 4;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		uint8 sideStepSpeed = 20;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 Stamina = 100;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -108,9 +110,12 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 		uint8 attackType = 4;
 
-	bool bStepping = false;
-	float steppingSpeed = 0;
+	uint8 steppingSpeed = 0;
 	uint8 steppingFrameTime = 0;
+	bool bDoubleTapW = false;
+	bool bDoubleTapA = false;
+	bool bDoubleTapS = false;
+	bool bDoubleTapD = false;
 	uint8 KeyW = 0;
 	uint8 KeyA = 0;
 	uint8 KeyS = 0;
@@ -131,14 +136,23 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	void PressedW(float Axis);
-	void PressedA(float Axis);
-	void PressedS(float Axis);
-	void PressedD(float Axis);
+	void AxisW(float Axis);
+	void AxisA(float Axis);
+	void AxisS(float Axis);
+	void AxisD(float Axis);
+	void PressedW();
+	void PressedA();
+	void PressedS();
+	void PressedD();
+	void ReleasedW();
+	void ReleasedA();
+	void ReleasedS();
+	void ReleasedD();
 	void PressedLight();
 	void PressedMedium();
 	void PressedHeavy();
 	void PressedSpecial();
 	void PressedBlock();
 	void ReleasedBlock();
+	void AxisBlock(float Axis);
 };
