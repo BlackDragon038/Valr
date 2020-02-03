@@ -100,6 +100,7 @@ public:
 
 	uint8 currentFrameOfAttack = 0;
 	uint8 currentPartsIndex = 0;
+	uint8 stunPush = 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		TArray<FAttackData> Attacks;

@@ -131,6 +131,7 @@ void AFightManager::Tick(float DeltaTime)
 					Player2->State = AFighterPawn::STATE::Stunned;
 					Player2->currentFrameOfAttack = Player1->Attacks[Player1->attackType].StunRate;
 					bPlayer2IsHit = true;
+					Player2->stunPush = Player1->Attacks[Player1->attackType].StunPushPower;
 				}
 				Player1->currentFrameOfAttack++;
 			}
@@ -149,13 +150,14 @@ void AFightManager::Tick(float DeltaTime)
 		if (Player1->currentFrameOfAttack > 0)
 		{
 			Player1->currentFrameOfAttack--;
-			Player1->SetActorLocation(Player1->GetActorLocation() + (toPlayer1 * (Player1->currentFrameOfAttack / 5)));
+			Player1->SetActorLocation(Player1->GetActorLocation() + (toPlayer1 * (Player1->currentFrameOfAttack * ((float)Player1->stunPush/10.f))));
 		}
 		else
 		{
 			Player1->State = AFighterPawn::STATE::Idle;
 			Player1->InputID = AFighterPawn::INPUT::IDLE;
 			Player1->currentPartsIndex = 0;
+			Player1->stunPush = 1;
 			Player1->attackType = AFighterPawn::ATTACK_TYPE::NONE;
 		}
 	}
@@ -204,6 +206,7 @@ void AFightManager::Tick(float DeltaTime)
 					Player1->State = AFighterPawn::STATE::Stunned;
 					Player1->currentFrameOfAttack = Player2->Attacks[Player2->attackType].StunRate;
 					bPlayer1IsHit = true;
+					Player1->stunPush = Player2->Attacks[Player2->attackType].StunPushPower;
 				}
 				Player2->currentFrameOfAttack++;
 			}
@@ -222,13 +225,14 @@ void AFightManager::Tick(float DeltaTime)
 		if (Player2->currentFrameOfAttack > 0)
 		{
 			Player2->currentFrameOfAttack--;
-			Player2->SetActorLocation(Player2->GetActorLocation() + (toPlayer2 * (Player2->currentFrameOfAttack / 5)));
+			Player2->SetActorLocation(Player2->GetActorLocation() + (toPlayer2 * (Player2->currentFrameOfAttack * ((float)Player2->stunPush/10.f))));
 		}
 		else
 		{
 			Player2->State = AFighterPawn::STATE::Idle;
 			Player2->InputID = AFighterPawn::INPUT::IDLE;
 			Player2->currentPartsIndex = 0;
+			Player2->stunPush = 1;
 			Player2->attackType = AFighterPawn::ATTACK_TYPE::NONE;
 			/*During an attack, the test for detection will be done during attack frames.
 			If the attack does hit an enemy, bPlayerXIsHit is set to true to avoid the attack be applied many times.
