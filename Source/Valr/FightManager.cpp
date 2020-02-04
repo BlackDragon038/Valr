@@ -121,7 +121,8 @@ void AFightManager::Tick(float DeltaTime)
 				(Player1->GetActorLocation() - Player2->GetActorLocation()).Size() < Player2->BlockData.maxDist)
 			{
 				Player1->State = AFighterPawn::STATE::Stunned;
-				Player1->currentFrameOfAttack = Player2->blockStunRate;
+				Player1->currentFrameOfAttack = Player2->BlockData.blockStunRate;
+				Player1->stunPush = Player2->BlockData.blockPushPower;
 			}
 			else
 			{
@@ -150,7 +151,7 @@ void AFightManager::Tick(float DeltaTime)
 		if (Player1->currentFrameOfAttack > 0)
 		{
 			Player1->currentFrameOfAttack--;
-			Player1->SetActorLocation(Player1->GetActorLocation() + (toPlayer1 * (Player1->currentFrameOfAttack * ((float)Player1->stunPush/10.f))));
+			Player1->SetActorLocation(Player1->GetActorLocation() + (toPlayer1 * (Player1->currentFrameOfAttack * ((float)Player1->stunPush/100.f))));
 		}
 		else
 		{
@@ -196,7 +197,8 @@ void AFightManager::Tick(float DeltaTime)
 				(Player2->GetActorLocation() - Player1->GetActorLocation()).Size() < Player1->BlockData.maxDist)
 			{
 				Player2->State = AFighterPawn::STATE::Stunned;
-				Player2->currentFrameOfAttack = Player1->blockStunRate;
+				Player2->currentFrameOfAttack = Player1->BlockData.blockStunRate;
+				Player2->stunPush = Player1->BlockData.blockPushPower;
 			}
 			else
 			{
@@ -225,7 +227,7 @@ void AFightManager::Tick(float DeltaTime)
 		if (Player2->currentFrameOfAttack > 0)
 		{
 			Player2->currentFrameOfAttack--;
-			Player2->SetActorLocation(Player2->GetActorLocation() + (toPlayer2 * (Player2->currentFrameOfAttack * ((float)Player2->stunPush/10.f))));
+			Player2->SetActorLocation(Player2->GetActorLocation() + (toPlayer2 * (Player2->currentFrameOfAttack * ((float)Player2->stunPush/100.f))));
 		}
 		else
 		{

@@ -466,13 +466,12 @@ void AFighterPawn::AxisBlock(float Axis)
 {
 	if (State != STATE::Attacking && State != STATE::Stunned && State != STATE::Stepping)
 	{
-		if (Axis > 0)
+		if (Axis > 0 && Stamina > 50)
 		{
 			State = STATE::Blocking;
-			InputID = INPUT::Block;
 			if (InputID != INPUT::Block)
-				if (Stamina > 25) 
-						Stamina -= 25;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
+					Stamina -= 50;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
+			InputID = INPUT::Block;
 		}
 		else if (Axis < 1)
 		{

@@ -21,6 +21,10 @@ struct FBlockData
 		float maxDist;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float Angle;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		uint8 blockStunRate = 25;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		uint8 blockPushPower = 1;
 };
  
 USTRUCT(BlueprintType)
@@ -82,32 +86,29 @@ public:
 		USceneComponent* Root;
 
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadOnly)
 		uint8 InputID;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fighter Base Variables")
 		uint8 Health = 255;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fighter Base Variables")
 		uint8 MovementSpeed = 4;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fighter Base Variables")
 		uint8 sideStepSpeed = 20;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fighter Base Variables")
 		uint8 Stamina = 100;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		uint8 blockStunRate = 25;
-
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadOnly)
 		uint8 State;
 
 	uint8 currentFrameOfAttack = 0;
 	uint8 currentPartsIndex = 0;
 	uint8 stunPush = 1;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack Data")
 		TArray<FAttackData> Attacks;
 
 	TArray<uint8> inputBuffer;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Block Data")
 		FBlockData BlockData;
 
 	UPROPERTY(BlueprintReadOnly)
