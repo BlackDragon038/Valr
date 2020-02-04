@@ -105,6 +105,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		TArray<FAttackData> Attacks;
 
+	TArray<uint8> inputBuffer;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		FBlockData BlockData;
 

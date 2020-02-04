@@ -108,10 +108,10 @@ void AFighterPawn::Tick(float DeltaTime)
 
 	if (bDoubleTapW)
 	{
-		if (steppingSpeed >= 10)
+		if (steppingSpeed >= sideStepSpeed)
 		{
 			State = STATE::Stepping;
-			steppingSpeed -= 10;
+			steppingSpeed -= sideStepSpeed;
 			SetActorLocation(GetActorLocation() + GetActorRightVector() * -((float)steppingSpeed / 10.f));
 		}
 		else
