@@ -62,20 +62,22 @@ struct FAttackData
 	int AttackTotalFrameCount = 0;
 };
 
+UENUM(BlueprintType)
+enum class INPUT : uint8 { IDLE, UP, UP_LEFT, LEFT, LEFT_DOWN, DOWN, DOWN_RIGHT, RIGHT, RIGHT_UP, LIGHT, MEDIUM, HEAVY, SPECIAL, BLOCK };
+
+UENUM(BlueprintType)
+enum class ATTACK_TYPE : uint8 { LIGHT, MEDIUM, HEAVY, SPECIAL, NONE };
+
+UENUM(BlueprintType)
+enum class STATE : uint8 { IDLE, MOVING, BLOCKING, ATTACKING, STUNNED, STEPPING};
+
 UCLASS()
 class VALR_API AFighterPawn : public APawn
 {
 	GENERATED_BODY()
 
 public:
-	enum INPUT { IDLE, UP, UP_LEFT, LEFT, LEFT_DOWN, DOWN, DOWN_RIGHT, RIGHT, RIGHT_UP, Light, Medium, Heavy, Special, Block };
-
-	enum ATTACK_TYPE { LIGHT, MEDIUM, HEAVY, SPECIAL, NONE};
-
-	enum STATE { Idle, Moving, Blocking, Attacking, Stunned, Stepping };
-
-	enum KEY_STATE { RESET, RELEASED, PRESSED_ONCE, PRESSED_TWICE };
-
+	enum class KEY_STATE { RESET, RELEASED, PRESSED_ONCE, PRESSED_TWICE };
 	// Sets default values for this pawn's properties
 	AFighterPawn();
 
@@ -85,34 +87,41 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		USceneComponent* Root;
 
-
 	UPROPERTY(BlueprintReadOnly)
-		uint8 InputID;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fighter Base Variables")
+		INPUT InputID = INPUT::IDLE;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Base Stats")
 		uint8 Health = 255;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fighter Base Variables")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 		uint8 MovementSpeed = 4;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fighter Base Variables")
-		uint8 sideStepSpeed = 20;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fighter Base Variables")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+		uint8 sideStepSpeed = 2;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+		uint8 sideStepFrameTime = 20;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+		uint8 turnSpeed = 30;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Base Stats")
 		uint8 Stamina = 100;
 	UPROPERTY(BlueprintReadOnly)
-		uint8 State;
+		STATE State = STATE::IDLE;
 
+	UPROPERTY(BlueprintReadOnly)
 	uint8 currentFrameOfAttack = 0;
+
 	uint8 currentPartsIndex = 0;
 	uint8 stunPush = 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack Data")
 		TArray<FAttackData> Attacks;
 
-	TArray<uint8> inputBuffer;
+	uint8 inputBufferIndex = 0;
+	INPUT inputBuffer[10];
+	INPUT inputBufferKey = INPUT::IDLE;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Block Data")
 		FBlockData BlockData;
 
 	UPROPERTY(BlueprintReadOnly)
-		uint8 attackType = 4;
+		ATTACK_TYPE attackType = ATTACK_TYPE::NONE;
 
 	uint8 steppingSpeed = 0;
 	uint8 steppingFrameTime = 0;
@@ -120,14 +129,18 @@ public:
 	bool bDoubleTapA = false;
 	bool bDoubleTapS = false;
 	bool bDoubleTapD = false;
-	uint8 KeyW = 0;
-	uint8 KeyA = 0;
-	uint8 KeyS = 0;
-	uint8 KeyD = 0;
+	KEY_STATE KeyW = KEY_STATE::RESET;
+	KEY_STATE KeyA = KEY_STATE::RESET;
+	KEY_STATE KeyS = KEY_STATE::RESET;
+	KEY_STATE KeyD = KEY_STATE::RESET;
 
+	UPROPERTY(BlueprintReadOnly)
 	bool UP_Key = 0;
+	UPROPERTY(BlueprintReadOnly)
 	bool LEFT_Key = 0;
+	UPROPERTY(BlueprintReadOnly)
 	bool DOWN_Key = 0;
+	UPROPERTY(BlueprintReadOnly)
 	bool RIGHT_Key = 0;
 
 protected:
