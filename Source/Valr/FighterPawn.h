@@ -22,6 +22,8 @@ struct FBlockData
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float Angle;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		uint8 staminaCost = 45;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 blockStunRate = 25;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 blockPushPower = 1;
@@ -51,6 +53,8 @@ struct FAttackData
 	GENERATED_BODY()
 	UPROPERTY(EditAnywhere)
 		uint8 Damage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		uint8 staminaCost;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 StunRate = 1;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -101,6 +105,8 @@ public:
 		uint8 turnSpeed = 30;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Base Stats")
 		uint8 Stamina = 100;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Base Stats")
+		uint8 staminaRegeneration = 2;
 	UPROPERTY(BlueprintReadOnly)
 		STATE State = STATE::IDLE;
 
@@ -114,7 +120,7 @@ public:
 		TArray<FAttackData> Attacks;
 
 	uint8 inputBufferIndex = 0;
-	INPUT inputBuffer[10];
+	INPUT inputBuffer[10] = {INPUT::IDLE};
 	INPUT inputBufferKey = INPUT::IDLE;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Block Data")

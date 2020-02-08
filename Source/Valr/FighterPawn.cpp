@@ -44,8 +44,6 @@ void AFighterPawn::BeginPlay()
 void AFighterPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (inputBufferIndex == 9)
-	{
 		inputBuffer[0] = inputBuffer[1];
 		inputBuffer[1] = inputBuffer[2];
 		inputBuffer[2] = inputBuffer[3];
@@ -57,12 +55,6 @@ void AFighterPawn::Tick(float DeltaTime)
 		inputBuffer[8] = inputBuffer[9];
 		inputBuffer[9] = inputBufferKey;
 		UE_LOG(LogTemp, Warning, TEXT("%i %i %i %i %i %i %i %i %i"),inputBuffer[0], inputBuffer[1], inputBuffer[2], inputBuffer[3], inputBuffer[4], inputBuffer[5], inputBuffer[6], inputBuffer[7], inputBuffer[8], inputBuffer[9])
-	}
-	else
-	{
-		inputBuffer[inputBufferIndex] = inputBufferKey;
-		inputBufferIndex++;
-	}
 	if (UP_Key == 1 && LEFT_Key == 0 && DOWN_Key == 0 && RIGHT_Key == 0 && 
 		InputID != INPUT::BLOCK && InputID != INPUT::SPECIAL && InputID != INPUT::HEAVY && InputID != INPUT::MEDIUM && InputID != INPUT::LIGHT && State != STATE::STEPPING) InputID = INPUT::UP;
 	else if (UP_Key == 1 && LEFT_Key == 1 && DOWN_Key == 0 && RIGHT_Key == 0 && 
@@ -86,8 +78,8 @@ void AFighterPawn::Tick(float DeltaTime)
 		InputID = INPUT::IDLE;
 	}
 
-	if (State != STATE::ATTACKING && State != STATE::BLOCKING && Stamina < 255 && State != STATE::STEPPING)
-		Stamina += 1;
+	if (State != STATE::ATTACKING && State != STATE::BLOCKING && Stamina < 255-staminaRegeneration && State != STATE::STEPPING)
+		Stamina += staminaRegeneration;
 
 	if (steppingFrameTime > 0)
 	{
@@ -421,48 +413,48 @@ void AFighterPawn::ReleasedD()
 void AFighterPawn::PressedLight() 
 {
 	inputBufferKey = INPUT::LIGHT;
-	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING && Stamina >= 20 && State != STATE::STEPPING)
+	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING && Stamina >= Attacks[static_cast<uint8>(ATTACK_TYPE::LIGHT)].staminaCost && State != STATE::STEPPING)
 	{
 		State = STATE::ATTACKING;
 		InputID = INPUT::LIGHT;
 		attackType = ATTACK_TYPE::LIGHT;
-		if (Stamina > 20) Stamina -= 20;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
+		if (Stamina > Attacks[static_cast<uint8>(attackType)].staminaCost) Stamina -= Attacks[static_cast<uint8>(attackType)].staminaCost;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
 	}
 }
 
 void AFighterPawn::PressedMedium() 
 {
 	inputBufferKey = INPUT::MEDIUM;
-	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING && Stamina >= 45 && State != STATE::STEPPING)
+	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING && Stamina >= Attacks[static_cast<uint8>(ATTACK_TYPE::MEDIUM)].staminaCost && State != STATE::STEPPING)
 	{
 		State = STATE::ATTACKING;
 		InputID = INPUT::MEDIUM;
 		attackType = ATTACK_TYPE::MEDIUM;
-		if (Stamina > 45) Stamina -= 45;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
+		if (Stamina > Attacks[static_cast<uint8>(attackType)].staminaCost) Stamina -= Attacks[static_cast<uint8>(attackType)].staminaCost;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
 	}
 }
 
 void AFighterPawn::PressedHeavy() 
 {
 	inputBufferKey = INPUT::HEAVY;
-	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING && Stamina >= 70 && State != STATE::STEPPING)
+	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING && Stamina >= Attacks[static_cast<uint8>(ATTACK_TYPE::HEAVY)].staminaCost && State != STATE::STEPPING)
 	{
 		State = STATE::ATTACKING;
 		InputID = INPUT::HEAVY;
 		attackType = ATTACK_TYPE::HEAVY;
-		if (Stamina > 70) Stamina -= 70;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
+		if (Stamina > Attacks[static_cast<uint8>(attackType)].staminaCost) Stamina -= Attacks[static_cast<uint8>(attackType)].staminaCost;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
 	}
 }
 
 void AFighterPawn::PressedSpecial() 
 {
 	inputBufferKey = INPUT::SPECIAL;
-	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING &&  Stamina >= 100 && State != STATE::STEPPING)
+	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING &&  Stamina >= Attacks[static_cast<uint8>(ATTACK_TYPE::SPECIAL)].staminaCost && State != STATE::STEPPING)
 	{
 		State = STATE::ATTACKING;
 		InputID = INPUT::SPECIAL;
 		attackType = ATTACK_TYPE::SPECIAL;
-		if (Stamina > 100) Stamina -= 100;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
+		if (Stamina > Attacks[static_cast<uint8>(attackType)].staminaCost) Stamina -= Attacks[static_cast<uint8>(attackType)].staminaCost;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
 	}
 }
 
@@ -472,7 +464,7 @@ void AFighterPawn::PressedBlock()
 	{
 		State = STATE::BLOCKING;
 		InputID = INPUT::BLOCK;
-		if (Stamina > 25) Stamina -= 25;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
+		if (Stamina > BlockData.staminaCost) Stamina -= BlockData.staminaCost;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
 	}
 }
 
@@ -489,11 +481,11 @@ void AFighterPawn::AxisBlock(float Axis)
 {
 	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::STEPPING)
 	{
-		if (Axis > 0 && Stamina > 50)
+		if (Axis > 0 && Stamina > BlockData.staminaCost)
 		{
 			State = STATE::BLOCKING;
 			if (InputID != INPUT::BLOCK)
-					Stamina -= 50;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
+					Stamina -= BlockData.staminaCost;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
 			InputID = INPUT::BLOCK;
 		}
 		else if (Axis < 1)

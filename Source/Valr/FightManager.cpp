@@ -58,11 +58,11 @@ void AFightManager::Tick(float DeltaTime)
 	Camera->SetActorLocation(FVector((Player1->GetActorLocation().X + Player2->GetActorLocation().X) * 0.5f, (Player1->GetActorLocation().Y + Player2->GetActorLocation().Y) * 0.5f, Player1->GetActorLocation().Z + Camera->Height));
 	Camera->SpringArm->TargetArmLength = FVector::Distance(Player1->GetActorLocation(), Player2->GetActorLocation());
 	if (Camera->SpringArm->TargetArmLength < Camera->closestDistance) Camera->SpringArm->TargetArmLength = Camera->closestDistance;
-	/*if (Player2->State != AFighterPawn::STATE::Stunned)
+	/*if (Player2->State != STATE::STUNNED)
 	{
 		if (t == 0)
 		{
-			a = FMath::RandRange(0, 9);
+			n = FMath::RandRange(0, 9);
 			t = 100;
 		}
 		else
@@ -70,10 +70,10 @@ void AFightManager::Tick(float DeltaTime)
 			t--;
 			switch (n)
 			{
-				case 0: Player2->PressedW(1); Player2->PressedA(0); Player2->PressedS(0); Player2->PressedD(0); break;
-				case 1: Player2->PressedW(0); Player2->PressedA(1); Player2->PressedS(0); Player2->PressedD(0); break;
-				case 2: Player2->PressedW(0); Player2->PressedA(0); Player2->PressedS(1); Player2->PressedD(0); break;
-				case 3: Player2->PressedW(0); Player2->PressedA(0); Player2->PressedS(0); Player2->PressedD(1); break;
+				case 0: Player2->AxisW(1); Player2->AxisA(0); Player2->AxisS(0); Player2->AxisD(0); break;
+				case 1: Player2->AxisW(0); Player2->AxisA(1); Player2->AxisS(0); Player2->AxisD(0); break;
+				case 2: Player2->AxisW(0); Player2->AxisA(0); Player2->AxisS(1); Player2->AxisD(0); break;
+				case 3: Player2->AxisW(0); Player2->AxisA(0); Player2->AxisS(0); Player2->AxisD(1); break;
 				case 4: Player2->PressedLight(); break;
 				case 5: Player2->PressedMedium(); break;
 				case 6: Player2->PressedHeavy(); break;
