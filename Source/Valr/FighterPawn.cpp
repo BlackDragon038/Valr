@@ -54,7 +54,7 @@ void AFighterPawn::Tick(float DeltaTime)
 		inputBuffer[7] = inputBuffer[8];
 		inputBuffer[8] = inputBuffer[9];
 		inputBuffer[9] = inputBufferKey;
-		UE_LOG(LogTemp, Warning, TEXT("%i %i %i %i %i %i %i %i %i"),inputBuffer[0], inputBuffer[1], inputBuffer[2], inputBuffer[3], inputBuffer[4], inputBuffer[5], inputBuffer[6], inputBuffer[7], inputBuffer[8], inputBuffer[9])
+		//UE_LOG(LogTemp, Warning, TEXT("%i %i %i %i %i %i %i %i %i"),inputBuffer[0], inputBuffer[1], inputBuffer[2], inputBuffer[3], inputBuffer[4], inputBuffer[5], inputBuffer[6], inputBuffer[7], inputBuffer[8], inputBuffer[9])
 	if (UP_Key == 1 && LEFT_Key == 0 && DOWN_Key == 0 && RIGHT_Key == 0 && 
 		InputID != INPUT::BLOCK && InputID != INPUT::SPECIAL && InputID != INPUT::HEAVY && InputID != INPUT::MEDIUM && InputID != INPUT::LIGHT && State != STATE::STEPPING) InputID = INPUT::UP;
 	else if (UP_Key == 1 && LEFT_Key == 1 && DOWN_Key == 0 && RIGHT_Key == 0 && 
@@ -226,7 +226,7 @@ void AFighterPawn::AxisA(float Axis)
 
 		if (LEFT_Key)
 		{
-			Stamina -= 2;
+			Stamina -= 3;
 			SetActorLocation(GetActorLocation() + GetActorForwardVector() * -MovementSpeed);
 			State = STATE::MOVING;
 		}

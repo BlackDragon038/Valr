@@ -6,6 +6,7 @@
 #include <cmath>
 #include <EngineGlobals.h>
 #include <Runtime/Engine/Classes/Engine/Engine.h>
+#include "GameFramework/PlayerController.h"
 
 #include "Kismet/KismetMathLibrary.h"
 
@@ -40,6 +41,24 @@ float AFightManager::Angle(FVector a, FVector b)
 void AFightManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	if (timeToStart > 1)
+	{
+		timeToStart -= 1;
+		Camera->SetActorLocation(FVector((Player1->GetActorLocation().X + Player2->GetActorLocation().X) * 0.5f, (Player1->GetActorLocation().Y + Player2->GetActorLocation().Y) * 0.5f, Player1->GetActorLocation().Z + Camera->Height));
+		Camera->SpringArm->TargetArmLength = FMath::Lerp(Camera->SpringArm->TargetArmLength,350.f,0.05f);
+		FVector MiddleVector = Player2->GetActorLocation() - Player1->GetActorLocation();
+		FVector PerpendicularVector = { MiddleVector.Y,-MiddleVector.X,MiddleVector.Z };
+		PerpendicularVector.Normalize();
+		Camera->SetActorRotation(FRotator(PerpendicularVector.Rotation().Roll, PerpendicularVector.Rotation().Yaw, PerpendicularVector.Rotation().Pitch));
+		DisableInput(GetWorld()->GetFirstPlayerController());
+		return;
+	}
+	else if (timeToStart == 1)
+	{
+		EnableInput(GetWorld()->GetFirstPlayerController());
+		timeToStart = 0;
+	}
+
 	roundTimer -= 1;
 	FVector toPlayer1 = Player1->GetActorLocation() - Player2->GetActorLocation();
 	FVector toPlayer2 = Player2->GetActorLocation() - Player1->GetActorLocation();
@@ -123,6 +142,7 @@ void AFightManager::Tick(float DeltaTime)
 				Player1->State = STATE::STUNNED;
 				Player1->currentFrameOfAttack = Player2->BlockData.blockStunRate;
 				Player1->stunPush = Player2->BlockData.blockPushPower;
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), Player1->hitParticle, Player1->GetActorLocation() + FVector(0, 0, 120) + toPlayer2 * 2, toPlayer2.Rotation());
 			}
 			else
 			{
@@ -133,6 +153,7 @@ void AFightManager::Tick(float DeltaTime)
 					Player2->currentFrameOfAttack = Player1->Attacks[static_cast<uint8>(Player1->attackType)].StunRate;
 					bPlayer2IsHit = true;
 					Player2->stunPush = Player1->Attacks[static_cast<uint8>(Player1->attackType)].StunPushPower;
+					UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), Player2->hitParticle, Player2->GetActorLocation() + FVector(0,0,120) + toPlayer1 * 2, toPlayer1.Rotation());
 				}
 				Player1->currentFrameOfAttack++;
 			}
@@ -199,6 +220,7 @@ void AFightManager::Tick(float DeltaTime)
 				Player2->State = STATE::STUNNED;
 				Player2->currentFrameOfAttack = Player1->BlockData.blockStunRate;
 				Player2->stunPush = Player1->BlockData.blockPushPower;
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), Player2->hitParticle, Player2->GetActorLocation() + FVector(0, 0, 120) + toPlayer1 * 2, toPlayer1.Rotation());
 			}
 			else
 			{
@@ -209,6 +231,7 @@ void AFightManager::Tick(float DeltaTime)
 					Player1->currentFrameOfAttack = Player2->Attacks[static_cast<uint8>(Player2->attackType)].StunRate;
 					bPlayer1IsHit = true;
 					Player1->stunPush = Player2->Attacks[static_cast<uint8>(Player2->attackType)].StunPushPower;
+					UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), Player1->hitParticle, Player1->GetActorLocation() + FVector(0, 0, 120) + toPlayer2 * 2, toPlayer2.Rotation());
 				}
 				Player2->currentFrameOfAttack++;
 			}

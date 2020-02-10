@@ -4,6 +4,8 @@
 
 #include "Runtime/Engine/Classes/Components/SkeletalMeshComponent.h"
 #include "Runtime/Engine/Classes/Engine/StaticMeshActor.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraSystem.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
@@ -91,6 +93,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		USceneComponent* Root;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UNiagaraSystem* hitParticle;
+
 	UPROPERTY(BlueprintReadOnly)
 		INPUT InputID = INPUT::IDLE;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Base Stats")
@@ -174,7 +179,7 @@ public:
 	void PressedLight();
 	void PressedMedium();
 	void PressedHeavy();
-	void PressedSpecial();
+	virtual void PressedSpecial();
 	void PressedBlock();
 	void ReleasedBlock();
 	void AxisBlock(float Axis);

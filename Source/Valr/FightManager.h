@@ -32,6 +32,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 roundTimer = 3600;
 
+	UPROPERTY(BlueprintReadWrite)
+		int32 timeToStart = 180;
+
 	uint8 t = 100;
 	uint8 n = 0;
 
