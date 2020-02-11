@@ -3,10 +3,16 @@
 
 #include "Samurai.h"
 
+void ASamurai::BeginPlay()
+{
+	Super::BeginPlay();
+	Name = "Samurai";
+}
+
 void ASamurai::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (attackType == ATTACK_TYPE::SPECIAL && State != STATE::STUNNED) SetActorLocation(GetActorLocation() + GetActorForwardVector() * (Attacks[static_cast<uint8>(attackType)].AttackTotalFrameCount-currentFrameOfAttack));
+	if (attackType == ATTACK_TYPE::SPECIAL && State != STATE::STUNNED && State != STATE::IDLE) SetActorLocation(GetActorLocation() + GetActorForwardVector() * (Attacks[static_cast<uint8>(attackType)].AttackTotalFrameCount - currentFrameOfAttack) * specialAttackSpeedMultiplier);
 }
 
 void ASamurai::PressedSpecial()

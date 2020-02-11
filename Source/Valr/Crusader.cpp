@@ -3,6 +3,13 @@
 
 #include "Crusader.h"
 
+void ACrusader::BeginPlay()
+{
+	Super::BeginPlay();
+	Name = "Crusader";
+}
+
+
 void ACrusader::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);

@@ -10,6 +10,8 @@
 
 #include "FightManager.generated.h"
 
+UENUM(BlueprintType)
+enum class ROUND_STATE : uint8 { ROUND_OVER, ROUND_RESTARTING, ROUND_ABOUT_TO_START, ROUND_ONGOING };
 
 UCLASS()
 class VALR_API AFightManager : public APawn
@@ -29,11 +31,23 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		ACamera* Camera = nullptr;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadOnly)
 		int32 roundTimer = 3600;
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadOnly)
 		int32 timeToStart = 180;
+
+	UPROPERTY(BlueprintReadOnly)
+		uint8 roundCount = 1;
+
+	UPROPERTY(BlueprintReadOnly)
+		uint8 Player1Score = 0;
+
+	UPROPERTY(BlueprintReadOnly)
+		uint8 Player2Score = 0;
+
+	UPROPERTY(BlueprintReadOnly)
+		ROUND_STATE roundState;
 
 	uint8 t = 100;
 	uint8 n = 0;
@@ -41,6 +55,10 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	void processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector toP1, FVector toP2, bool &bEnemyIsHit);
+
+	void testRoundStatus();
 
 	float Angle(FVector a, FVector b);
 

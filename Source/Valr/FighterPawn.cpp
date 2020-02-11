@@ -40,21 +40,81 @@ void AFighterPawn::BeginPlay()
 	}
 }
 
+void AFighterPawn::Reset()
+{
+	Health = 255;
+	Stamina = 255;
+	InputID = INPUT::IDLE;
+	UP_Key = 0;
+	DOWN_Key = 0;
+	LEFT_Key = 0;
+	RIGHT_Key = 0;
+	KeyW = KEY_STATE::RESET;
+	KeyA = KEY_STATE::RESET;
+	KeyS = KEY_STATE::RESET;
+	KeyD = KEY_STATE::RESET;
+	steppingSpeed = 0;
+	steppingFrameTime = 0;
+	bDoubleTapW = false;
+	bDoubleTapA = false;
+	bDoubleTapS = false;
+	bDoubleTapD = false;
+	attackType = ATTACK_TYPE::NONE;
+	inputBuffer[10] = { INPUT::IDLE };
+	inputBufferKey = INPUT::IDLE;
+	currentFrameOfAttack = 0;
+	currentPartsIndex = 0;
+}
+
 // Called every frame
 void AFighterPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-		inputBuffer[0] = inputBuffer[1];
-		inputBuffer[1] = inputBuffer[2];
-		inputBuffer[2] = inputBuffer[3];
-		inputBuffer[3] = inputBuffer[4];
-		inputBuffer[4] = inputBuffer[5];
-		inputBuffer[5] = inputBuffer[6];
-		inputBuffer[6] = inputBuffer[7];
-		inputBuffer[7] = inputBuffer[8];
-		inputBuffer[8] = inputBuffer[9];
-		inputBuffer[9] = inputBufferKey;
-		//UE_LOG(LogTemp, Warning, TEXT("%i %i %i %i %i %i %i %i %i"),inputBuffer[0], inputBuffer[1], inputBuffer[2], inputBuffer[3], inputBuffer[4], inputBuffer[5], inputBuffer[6], inputBuffer[7], inputBuffer[8], inputBuffer[9])
+	if (State == STATE::ATTACKING)
+	{
+		FVector startMinAngle = GetActorLocation() + (GetActorRightVector() * Attacks[static_cast<uint8>(attackType)].Parts[currentPartsIndex].minDist);
+		FVector endMinAngle = GetActorLocation() + (GetActorRightVector() * Attacks[static_cast<uint8>(attackType)].Parts[currentPartsIndex].maxDist);
+		endMinAngle.Y = std::sin(FMath::DegreesToRadians(Attacks[static_cast<uint8>(attackType)].Parts[currentPartsIndex].minAngle));
+
+		FVector startMaxAngle = GetActorLocation() + (GetActorRightVector() * Attacks[static_cast<uint8>(attackType)].Parts[currentPartsIndex].minDist);
+		FVector endMaxAngle = GetActorLocation() + (GetActorRightVector() * Attacks[static_cast<uint8>(attackType)].Parts[currentPartsIndex].maxDist);
+		endMaxAngle.Y = std::sin(FMath::DegreesToRadians(Attacks[static_cast<uint8>(attackType)].Parts[currentPartsIndex].maxAngle));
+
+		DrawDebugLine
+		(
+			GetWorld(),
+			startMinAngle,
+			endMinAngle,
+			FColor::Red,
+			false,
+			1,
+			1,
+			1);
+		DrawDebugLine
+		(
+			GetWorld(),
+			startMaxAngle,
+			endMaxAngle,
+			FColor::Red,
+			false,
+			1,
+			1,
+			1);
+
+	}
+
+
+	inputBuffer[0] = inputBuffer[1];
+	inputBuffer[1] = inputBuffer[2];
+	inputBuffer[2] = inputBuffer[3];
+	inputBuffer[3] = inputBuffer[4];
+	inputBuffer[4] = inputBuffer[5];
+	inputBuffer[5] = inputBuffer[6];
+	inputBuffer[6] = inputBuffer[7];
+	inputBuffer[7] = inputBuffer[8];
+	inputBuffer[8] = inputBuffer[9];
+	inputBuffer[9] = inputBufferKey;
+	//UE_LOG(LogTemp, Warning, TEXT("%i %i %i %i %i %i %i %i %i"),inputBuffer[0], inputBuffer[1], inputBuffer[2], inputBuffer[3], inputBuffer[4], inputBuffer[5], inputBuffer[6], inputBuffer[7], inputBuffer[8], inputBuffer[9])
 	if (UP_Key == 1 && LEFT_Key == 0 && DOWN_Key == 0 && RIGHT_Key == 0 && 
 		InputID != INPUT::BLOCK && InputID != INPUT::SPECIAL && InputID != INPUT::HEAVY && InputID != INPUT::MEDIUM && InputID != INPUT::LIGHT && State != STATE::STEPPING) InputID = INPUT::UP;
 	else if (UP_Key == 1 && LEFT_Key == 1 && DOWN_Key == 0 && RIGHT_Key == 0 && 
@@ -72,7 +132,7 @@ void AFighterPawn::Tick(float DeltaTime)
 	else if (RIGHT_Key == 1 && UP_Key == 1 && LEFT_Key == 0 && DOWN_Key == 0 && 
 		InputID != INPUT::BLOCK && InputID != INPUT::SPECIAL && InputID != INPUT::HEAVY && InputID != INPUT::MEDIUM && InputID != INPUT::LIGHT && State != STATE::STEPPING) InputID = INPUT::RIGHT_UP;
 	else if (UP_Key == 0 && LEFT_Key == 0 && DOWN_Key == 0 && RIGHT_Key == 0 && 
-		State != STATE::ATTACKING && State != STATE::BLOCKING && State != STATE::STUNNED && State != STATE::STEPPING)
+		State != STATE::ATTACKING && State != STATE::BLOCKING && State != STATE::STUNNED && State != STATE::STEPPING && State != STATE::KNOCKED_DOWN && State != STATE::GETTING_UP)
 	{
 		State = STATE::IDLE;
 		InputID = INPUT::IDLE;

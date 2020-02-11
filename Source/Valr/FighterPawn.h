@@ -75,7 +75,7 @@ UENUM(BlueprintType)
 enum class ATTACK_TYPE : uint8 { LIGHT, MEDIUM, HEAVY, SPECIAL, NONE };
 
 UENUM(BlueprintType)
-enum class STATE : uint8 { IDLE, MOVING, BLOCKING, ATTACKING, STUNNED, STEPPING};
+enum class STATE : uint8 { IDLE, MOVING, BLOCKING, ATTACKING, STUNNED, STEPPING, KNOCKED_DOWN, GETTING_UP};
 
 UCLASS()
 class VALR_API AFighterPawn : public APawn
@@ -86,6 +86,9 @@ public:
 	enum class KEY_STATE { RESET, RELEASED, PRESSED_ONCE, PRESSED_TWICE };
 	// Sets default values for this pawn's properties
 	AFighterPawn();
+
+	UPROPERTY(BlueprintReadOnly)
+		FString Name;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		USkeletalMeshComponent* SkeletalMesh;
@@ -124,7 +127,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack Data")
 		TArray<FAttackData> Attacks;
 
-	uint8 inputBufferIndex = 0;
 	INPUT inputBuffer[10] = {INPUT::IDLE};
 	INPUT inputBufferKey = INPUT::IDLE;
 
@@ -160,6 +162,9 @@ protected:
 
 public:	
 	// Called every frame
+
+	void Reset();
+
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
