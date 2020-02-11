@@ -127,7 +127,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack Data")
 		TArray<FAttackData> Attacks;
 
-	INPUT inputBuffer[10] = {INPUT::IDLE};
+	INPUT inputBuffer[15] = {INPUT::IDLE};
 	INPUT inputBufferKey = INPUT::IDLE;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Block Data")
