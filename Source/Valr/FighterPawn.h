@@ -165,6 +165,8 @@ public:
 
 	void Reset();
 
+	void AttackReset();
+
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input

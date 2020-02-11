@@ -33,7 +33,7 @@ void AFightManager::BeginPlay()
 	roundState = ROUND_STATE::ROUND_RESTARTING;
 }
 
-void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector toP1, FVector toP2, bool &bEnemyIsHit)
+void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector toP1, FVector toP2, bool &bOpponentIsHit)
 {
 	if (P1->State == STATE::MOVING || P1->State == STATE::STEPPING)
 	{
@@ -52,7 +52,7 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 				P1->currentFrameOfAttack = 0;
 				P1->currentPartsIndex = 0;
 				P1->attackType = ATTACK_TYPE::NONE;
-				bEnemyIsHit = false;
+				bOpponentIsHit = false;
 				return;
 			}
 		}
@@ -73,15 +73,15 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 			}
 			else
 			{
-				if (!bEnemyIsHit)
+				if (!bOpponentIsHit)
 				{
 					if (P2->Health >= P1->Attacks[static_cast<uint8>(P1->attackType)].Damage) P2->Health -= P1->Attacks[static_cast<uint8>(P1->attackType)].Damage;
 					else P2->Health = 0;
 					P2->State = STATE::STUNNED;
 					P2->currentFrameOfAttack = P1->Attacks[static_cast<uint8>(P1->attackType)].StunRate;
-					bEnemyIsHit = true;
 					P2->stunPush = P1->Attacks[static_cast<uint8>(P1->attackType)].StunPushPower;
 					UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), P2->hitParticle, P2->GetActorLocation() + FVector(0, 0, 120) + toP1 * 2, toP1.Rotation());
+					bOpponentIsHit = true;
 				}
 				P1->currentFrameOfAttack++;
 			}
@@ -124,7 +124,7 @@ void AFightManager::testRoundStatus()
 			Player2->State = STATE::KNOCKED_DOWN;
 			Player2->Reset();
 			Player2->SetActorRotation(FRotator(90, 0, 0));
-			timeToStart = 240;
+			timeToStart = 300;
 			Player1->State = STATE::IDLE;
 			Player1->Reset();
 		}
@@ -135,10 +135,12 @@ void AFightManager::testRoundStatus()
 			Player1->State = STATE::KNOCKED_DOWN;
 			Player1->Reset();
 			Player1->SetActorRotation(FRotator(90, 0, 0));
-			timeToStart = 240;
+			timeToStart = 300;
 			Player2->State = STATE::IDLE;
 			Player2->Reset();
 		}
+		bPlayer1IsHit = false;
+		bPlayer2IsHit = false;
 		return;
 	}
 
@@ -149,9 +151,11 @@ void AFightManager::testRoundStatus()
 		Player1->State = STATE::KNOCKED_DOWN;
 		Player1->Reset();
 		Player1->SetActorRotation(FRotator(90, 0, 0));
-		timeToStart = 240;
+		timeToStart = 300;
 		Player2->State = STATE::IDLE;
 		Player2->Reset();
+		bPlayer1IsHit = false;
+		bPlayer2IsHit = false;
 	}
 	else if (Player2->Health == 0)
 	{
@@ -160,9 +164,11 @@ void AFightManager::testRoundStatus()
 		Player2->State = STATE::KNOCKED_DOWN;
 		Player2->Reset();
 		Player2->SetActorRotation(FRotator(90, 0, 0));
-		timeToStart = 240;
+		timeToStart = 300;
 		Player1->State = STATE::IDLE;
 		Player1->Reset();
+		bPlayer1IsHit = false;
+		bPlayer2IsHit = false;
 	}
 }
 
@@ -192,7 +198,6 @@ void AFightManager::Tick(float DeltaTime)
 	}
 
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Orange, FString::Printf(TEXT("Player 2 Angle: %f  -  Player 2 to Player 1 Distance: %f"), Angle(Player2->GetActorRightVector(), toPlayer1), (Player1->GetActorLocation() - Player2->GetActorLocation()).Size()));
-	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Orange, FString::Printf(TEXT("IsPlayerHit1? %i"), bPlayer1IsHit));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Blue, FString::Printf(TEXT("Player 2 State: %i"), Player2->State));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Blue, FString::Printf(TEXT("Player 2 InputID: %i"), Player2->InputID));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Orange, FString::Printf(TEXT("Player 2 CurrentFrameOfAttack: %i"), Player2->currentFrameOfAttack));
@@ -202,7 +207,6 @@ void AFightManager::Tick(float DeltaTime)
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::White, FString::Printf(TEXT("FrameTime: %f----------------------FrameRate: %f"), DeltaTime, 1000 / DeltaTime));
 
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Green, FString::Printf(TEXT("Player 1 Angle: %f  -  Player 1 to Player 2 Distance: %f"), Angle(Player1->GetActorRightVector(), toPlayer2), (Player2->GetActorLocation() - Player1->GetActorLocation()).Size()));
-	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Green, FString::Printf(TEXT("IsPlayerHit2? %i"), bPlayer2IsHit));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Red, FString::Printf(TEXT("Player 1 State: %i"), Player1->State));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Red, FString::Printf(TEXT("Player 1 InputID: %i"), Player1->InputID));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Green, FString::Printf(TEXT("Player 1 CurrentFrameOfAttack: %i"), Player1->currentFrameOfAttack));
@@ -211,7 +215,14 @@ void AFightManager::Tick(float DeltaTime)
 
 	if (timeToStart > 180)
 	{
-		roundState = ROUND_STATE::ROUND_OVER;
+		if (Player1->State == STATE::KNOCKED_DOWN)
+		{
+			roundState = ROUND_STATE::ROUND_OVER_PLAYER2_WINS;
+		}
+		else if (Player2->State == STATE::KNOCKED_DOWN)
+		{
+			roundState = ROUND_STATE::ROUND_OVER_PLAYER1_WINS;
+		}
 		timeToStart--;
 		DisableInput(GetWorld()->GetFirstPlayerController());
 		return;
@@ -254,12 +265,10 @@ void AFightManager::Tick(float DeltaTime)
 		if (Player1->State == STATE::GETTING_UP)
 		{
 			Player1->State = STATE::IDLE;
-			bPlayer1IsHit = false;
 		}
 		if (Player2->State == STATE::GETTING_UP)
 		{
 			Player2->State = STATE::IDLE;
-			bPlayer2IsHit = false;
 		}
 		EnableInput(GetWorld()->GetFirstPlayerController());
 		timeToStart = 0;

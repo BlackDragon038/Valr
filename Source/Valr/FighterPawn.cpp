@@ -66,6 +66,14 @@ void AFighterPawn::Reset()
 	currentPartsIndex = 0;
 }
 
+void AFighterPawn::AttackReset()
+{
+	State = STATE::IDLE;
+	attackType = ATTACK_TYPE::NONE;
+	currentFrameOfAttack = 0;
+	currentPartsIndex = 0;
+}
+
 // Called every frame
 void AFighterPawn::Tick(float DeltaTime)
 {
@@ -100,10 +108,8 @@ void AFighterPawn::Tick(float DeltaTime)
 			1,
 			1,
 			1);
-
 	}
-
-
+	
 	inputBuffer[0] = inputBuffer[1];
 	inputBuffer[1] = inputBuffer[2];
 	inputBuffer[2] = inputBuffer[3];
