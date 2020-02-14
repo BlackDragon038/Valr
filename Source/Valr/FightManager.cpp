@@ -71,7 +71,8 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 				(P1->GetActorLocation() - P2->GetActorLocation()).Size() > P2->BlockData.minDist &&
 				(P1->GetActorLocation() - P2->GetActorLocation()).Size() < P2->BlockData.maxDist && !P1->Attacks[static_cast<uint8>(P1->attackType)].bUnblockableAttack)
 			{
-				if (P2->specialMeter <= 255-45) P2->specialMeter += 45;
+				uint8 specialCharge = P1->Attacks[static_cast<uint8>(P1->attackType)].Damage* P2->specialChargeMultiplier;
+				if (P2->specialMeter <= 255-specialCharge) P2->specialMeter += specialCharge;
 				P1->State = STATE::STUNNED;
 				P1->currentFrameOfAttack = P2->BlockData.blockStunRate;
 				P1->stunPush = P2->BlockData.blockPushPower;
@@ -88,7 +89,8 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 					P2->stunPush = P1->Attacks[static_cast<uint8>(P1->attackType)].StunPushPower;
 					UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), P2->hitParticle, P2->GetActorLocation() + FVector(0, 0, 120) + toP1 * 2, toP1.Rotation());
 					bOpponentIsHit = true;
-					if (P2->specialMeter <= 255-20) P2->specialMeter += 20;
+					uint8 specialCharge = P1->Attacks[static_cast<uint8>(P1->attackType)].Damage* P2->specialChargeMultiplier;
+					if (P2->specialMeter <= 255-specialCharge) P2->specialMeter += specialCharge;
 				}
 				P1->currentFrameOfAttack++;
 				if (PlayerDistance > 50) 

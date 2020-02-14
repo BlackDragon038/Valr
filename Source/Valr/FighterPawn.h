@@ -118,8 +118,10 @@ public:
 		uint8 turnSpeed = 30;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Base Stats")
 		uint8 Stamina = 100;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Data")
+	UPROPERTY(BlueprintReadOnly)
 		uint8 specialMeter = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Data")
+		float specialChargeMultiplier = 1.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Base Stats")
 		uint8 staminaRegeneration = 2;
 	UPROPERTY(BlueprintReadOnly)
