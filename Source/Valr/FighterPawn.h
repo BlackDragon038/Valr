@@ -26,6 +26,8 @@ struct FBlockData
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 staminaCost = 45;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		uint8 Cooldown = 20;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 blockStunRate = 25;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 blockPushPower = 1;
@@ -62,8 +64,11 @@ struct FAttackData
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 StunPushPower = 5;
 	UPROPERTY(EditAnywhere)
+		bool bUnblockableAttack = false;
+	UPROPERTY(EditAnywhere)
+		float attackPush = 0.f;
+	UPROPERTY(EditAnywhere)
 		TArray<FFrameData> Parts;
-
 	UPROPERTY(BlueprintReadOnly)
 	int AttackTotalFrameCount = 0;
 };
@@ -113,6 +118,8 @@ public:
 		uint8 turnSpeed = 30;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Base Stats")
 		uint8 Stamina = 100;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Data")
+		uint8 specialMeter = 0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Base Stats")
 		uint8 staminaRegeneration = 2;
 	UPROPERTY(BlueprintReadOnly)
@@ -120,6 +127,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	uint8 currentFrameOfAttack = 0;
+
+	UPROPERTY(BlueprintReadOnly)
+		uint8 blockCooldown = 0;
 
 	uint8 currentPartsIndex = 0;
 	uint8 stunPush = 1;

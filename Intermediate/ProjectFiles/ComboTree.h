@@ -4,13 +4,17 @@
 struct Node
 {
 	ATTACK_TYPE Attack;
-	Node* Low;
-	Node* Medium;
-	Node* Heavy;
+	Node* Low = nullptr;
+	Node* Medium = nullptr;
+	Node* Heavy = nullptr;
 };
 
 class ComboTree
 {
+public: 
+	Node* node;
+	void AddNode(Node* n);
+	ATTACK_TYPE Search(Node n);
 
 };
 

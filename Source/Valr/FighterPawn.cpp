@@ -44,6 +44,7 @@ void AFighterPawn::Reset()
 {
 	Health = 255;
 	Stamina = 255;
+	specialMeter = 0;
 	InputID = INPUT::IDLE;
 	UP_Key = 0;
 	DOWN_Key = 0;
@@ -489,7 +490,7 @@ void AFighterPawn::PressedLight()
 		State = STATE::ATTACKING;
 		InputID = INPUT::LIGHT;
 		attackType = ATTACK_TYPE::LIGHT;
-		if (Stamina > Attacks[static_cast<uint8>(attackType)].staminaCost) Stamina -= Attacks[static_cast<uint8>(attackType)].staminaCost;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
+		if (Stamina >= Attacks[static_cast<uint8>(attackType)].staminaCost) Stamina -= Attacks[static_cast<uint8>(attackType)].staminaCost;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
 	}
 }
 
@@ -501,7 +502,7 @@ void AFighterPawn::PressedMedium()
 		State = STATE::ATTACKING;
 		InputID = INPUT::MEDIUM;
 		attackType = ATTACK_TYPE::MEDIUM;
-		if (Stamina > Attacks[static_cast<uint8>(attackType)].staminaCost) Stamina -= Attacks[static_cast<uint8>(attackType)].staminaCost;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
+		if (Stamina >= Attacks[static_cast<uint8>(attackType)].staminaCost) Stamina -= Attacks[static_cast<uint8>(attackType)].staminaCost;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
 	}
 }
 
@@ -513,19 +514,19 @@ void AFighterPawn::PressedHeavy()
 		State = STATE::ATTACKING;
 		InputID = INPUT::HEAVY;
 		attackType = ATTACK_TYPE::HEAVY;
-		if (Stamina > Attacks[static_cast<uint8>(attackType)].staminaCost) Stamina -= Attacks[static_cast<uint8>(attackType)].staminaCost;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
+		if (Stamina >= Attacks[static_cast<uint8>(attackType)].staminaCost) Stamina -= Attacks[static_cast<uint8>(attackType)].staminaCost;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
 	}
 }
 
 void AFighterPawn::PressedSpecial() 
 {
 	inputBufferKey = INPUT::SPECIAL;
-	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING &&  Stamina >= Attacks[static_cast<uint8>(ATTACK_TYPE::SPECIAL)].staminaCost && State != STATE::STEPPING)
+	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING &&  specialMeter >= Attacks[static_cast<uint8>(ATTACK_TYPE::SPECIAL)].staminaCost && State != STATE::STEPPING)
 	{
 		State = STATE::ATTACKING;
 		InputID = INPUT::SPECIAL;
 		attackType = ATTACK_TYPE::SPECIAL;
-		if (Stamina > Attacks[static_cast<uint8>(attackType)].staminaCost) Stamina -= Attacks[static_cast<uint8>(attackType)].staminaCost;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
+		if (specialMeter >= Attacks[static_cast<uint8>(attackType)].staminaCost) specialMeter -= Attacks[static_cast<uint8>(attackType)].staminaCost;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
 	}
 }
 
@@ -535,7 +536,7 @@ void AFighterPawn::PressedBlock()
 	{
 		State = STATE::BLOCKING;
 		InputID = INPUT::BLOCK;
-		if (Stamina > BlockData.staminaCost) Stamina -= BlockData.staminaCost;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
+		if (Stamina > BlockData.staminaCost) Stamina -= BlockData.staminaCost;
 	}
 }
 
@@ -552,12 +553,15 @@ void AFighterPawn::AxisBlock(float Axis)
 {
 	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::STEPPING)
 	{
-		if (Axis > 0 && Stamina > BlockData.staminaCost)
+		if (Axis > 0 && blockCooldown == 0 && Stamina > BlockData.staminaCost)
 		{
 			State = STATE::BLOCKING;
 			if (InputID != INPUT::BLOCK)
-					Stamina -= BlockData.staminaCost;	//NOTE: If this is called in an AI controller, it will drain stamina faster than you can say fuck.
+			{
+				Stamina -= BlockData.staminaCost;
+			}
 			InputID = INPUT::BLOCK;
+			blockCooldown = BlockData.Cooldown;
 		}
 		else if (Axis < 1)
 		{
@@ -568,4 +572,6 @@ void AFighterPawn::AxisBlock(float Axis)
 			}
 		}
 	}
+	if (InputID != INPUT::BLOCK && blockCooldown > 0)
+		blockCooldown--;
 }

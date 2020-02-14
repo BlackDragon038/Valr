@@ -63,6 +63,8 @@ protected:
 
 	void testRoundStatus();
 
+	void calculateTimers(FVector toP1, FVector toP2);
+
 	float Angle(FVector a, FVector b);
 
 public:	
