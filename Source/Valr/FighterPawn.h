@@ -9,6 +9,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include <vector>
 
 #include "FighterPawn.generated.h"
 
@@ -108,6 +109,8 @@ public:
 		INPUT InputID = INPUT::IDLE;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Base Stats")
 		uint8 Health = 255;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Base Stats")
+		uint8 inputBufferSize = 20;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 		uint8 MovementSpeed = 4;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
@@ -139,8 +142,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack Data")
 		TArray<FAttackData> Attacks;
 
-	INPUT inputBuffer[15] = {INPUT::IDLE};
-	INPUT inputBufferKey = INPUT::IDLE;
+	std::vector<INPUT> inputBuffer;
+	uint8 inputBufferIndex;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Block Data")
 		FBlockData BlockData;
@@ -178,6 +181,8 @@ public:
 	void Reset();
 
 	void AttackReset();
+
+	void testSideStep();
 
 	virtual void Tick(float DeltaTime) override;
 

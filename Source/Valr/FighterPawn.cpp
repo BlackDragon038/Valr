@@ -38,6 +38,9 @@ void AFighterPawn::BeginPlay()
 		}
 		a.AttackTotalFrameCount = totalFrames;
 	}
+	inputBufferIndex = 0;
+	inputBuffer.reserve(inputBufferSize);
+	Name = "Base Fighter";
 }
 
 void AFighterPawn::Reset()
@@ -46,10 +49,10 @@ void AFighterPawn::Reset()
 	Stamina = 255;
 	specialMeter = 0;
 	InputID = INPUT::IDLE;
-	UP_Key = 0;
-	DOWN_Key = 0;
-	LEFT_Key = 0;
-	RIGHT_Key = 0;
+	UP_Key = false;
+	DOWN_Key = false;
+	LEFT_Key = false;
+	RIGHT_Key = false;
 	KeyW = KEY_STATE::RESET;
 	KeyA = KEY_STATE::RESET;
 	KeyS = KEY_STATE::RESET;
@@ -61,8 +64,7 @@ void AFighterPawn::Reset()
 	bDoubleTapS = false;
 	bDoubleTapD = false;
 	attackType = ATTACK_TYPE::NONE;
-	inputBuffer[10] = { INPUT::IDLE };
-	inputBufferKey = INPUT::IDLE;
+	inputBuffer.clear();
 	currentFrameOfAttack = 0;
 	currentPartsIndex = 0;
 }
@@ -75,84 +77,8 @@ void AFighterPawn::AttackReset()
 	currentPartsIndex = 0;
 }
 
-// Called every frame
-void AFighterPawn::Tick(float DeltaTime)
+void AFighterPawn::testSideStep()
 {
-	Super::Tick(DeltaTime);
-	if (State == STATE::ATTACKING)
-	{
-		FVector startMinAngle = GetActorLocation() + (GetActorRightVector() * Attacks[static_cast<uint8>(attackType)].Parts[currentPartsIndex].minDist);
-		FVector endMinAngle = GetActorLocation() + (GetActorRightVector() * Attacks[static_cast<uint8>(attackType)].Parts[currentPartsIndex].maxDist);
-		endMinAngle.Y = std::sin(FMath::DegreesToRadians(Attacks[static_cast<uint8>(attackType)].Parts[currentPartsIndex].minAngle));
-
-		FVector startMaxAngle = GetActorLocation() + (GetActorRightVector() * Attacks[static_cast<uint8>(attackType)].Parts[currentPartsIndex].minDist);
-		FVector endMaxAngle = GetActorLocation() + (GetActorRightVector() * Attacks[static_cast<uint8>(attackType)].Parts[currentPartsIndex].maxDist);
-		endMaxAngle.Y = std::sin(FMath::DegreesToRadians(Attacks[static_cast<uint8>(attackType)].Parts[currentPartsIndex].maxAngle));
-
-		DrawDebugLine
-		(
-			GetWorld(),
-			startMinAngle,
-			endMinAngle,
-			FColor::Red,
-			false,
-			1,
-			1,
-			1);
-		DrawDebugLine
-		(
-			GetWorld(),
-			startMaxAngle,
-			endMaxAngle,
-			FColor::Red,
-			false,
-			1,
-			1,
-			1);
-	}
-	
-	inputBuffer[0] = inputBuffer[1];
-	inputBuffer[1] = inputBuffer[2];
-	inputBuffer[2] = inputBuffer[3];
-	inputBuffer[3] = inputBuffer[4];
-	inputBuffer[4] = inputBuffer[5];
-	inputBuffer[5] = inputBuffer[6];
-	inputBuffer[6] = inputBuffer[7];
-	inputBuffer[7] = inputBuffer[8];
-	inputBuffer[8] = inputBuffer[9];
-	inputBuffer[9] = inputBuffer[10];
-	inputBuffer[10] = inputBuffer[11];
-	inputBuffer[11] = inputBuffer[12];
-	inputBuffer[12] = inputBuffer[13];
-	inputBuffer[13] = inputBuffer[14];
-	inputBuffer[14] = inputBufferKey;
-	//UE_LOG(LogTemp, Warning, TEXT("%i %i %i %i %i %i %i %i %i"),inputBuffer[0], inputBuffer[1], inputBuffer[2], inputBuffer[3], inputBuffer[4], inputBuffer[5], inputBuffer[6], inputBuffer[7], inputBuffer[8], inputBuffer[9])
-	if (UP_Key == 1 && LEFT_Key == 0 && DOWN_Key == 0 && RIGHT_Key == 0 && 
-		InputID != INPUT::BLOCK && InputID != INPUT::SPECIAL && InputID != INPUT::HEAVY && InputID != INPUT::MEDIUM && InputID != INPUT::LIGHT && State != STATE::STEPPING) InputID = INPUT::UP;
-	else if (UP_Key == 1 && LEFT_Key == 1 && DOWN_Key == 0 && RIGHT_Key == 0 && 
-		InputID != INPUT::BLOCK && InputID != INPUT::SPECIAL && InputID != INPUT::HEAVY && InputID != INPUT::MEDIUM && InputID != INPUT::LIGHT && State != STATE::STEPPING) InputID = INPUT::UP_LEFT;
-	else if (LEFT_Key == 1 && UP_Key == 0 && DOWN_Key == 0 && RIGHT_Key == 0 && 
-		InputID != INPUT::BLOCK && InputID != INPUT::SPECIAL && InputID != INPUT::HEAVY && InputID != INPUT::MEDIUM && InputID != INPUT::LIGHT && State != STATE::STEPPING) InputID = INPUT::LEFT;
-	else if (LEFT_Key == 1 && DOWN_Key == 1 && UP_Key == 0 && RIGHT_Key == 0 && 
-		InputID != INPUT::BLOCK && InputID != INPUT::SPECIAL && InputID != INPUT::HEAVY && InputID != INPUT::MEDIUM && InputID != INPUT::LIGHT && State != STATE::STEPPING) InputID = INPUT::LEFT_DOWN;
-	else if (DOWN_Key == 1 && UP_Key == 0 && RIGHT_Key == 0 && LEFT_Key == 0 && 
-		InputID != INPUT::BLOCK && InputID != INPUT::SPECIAL && InputID != INPUT::HEAVY && InputID != INPUT::MEDIUM && InputID != INPUT::LIGHT && State != STATE::STEPPING) InputID = INPUT::DOWN;
-	else if (DOWN_Key == 1 && RIGHT_Key == 1 && UP_Key == 0 && LEFT_Key == 0 && 
-		InputID != INPUT::BLOCK && InputID != INPUT::SPECIAL && InputID != INPUT::HEAVY && InputID != INPUT::MEDIUM && InputID != INPUT::LIGHT && State != STATE::STEPPING) InputID = INPUT::DOWN_RIGHT;
-	else if (RIGHT_Key == 1 && UP_Key == 0 && LEFT_Key == 0 && DOWN_Key == 0 && 
-		InputID != INPUT::BLOCK && InputID != INPUT::SPECIAL && InputID != INPUT::HEAVY && InputID != INPUT::MEDIUM && InputID != INPUT::LIGHT && State != STATE::STEPPING) InputID = INPUT::RIGHT;
-	else if (RIGHT_Key == 1 && UP_Key == 1 && LEFT_Key == 0 && DOWN_Key == 0 && 
-		InputID != INPUT::BLOCK && InputID != INPUT::SPECIAL && InputID != INPUT::HEAVY && InputID != INPUT::MEDIUM && InputID != INPUT::LIGHT && State != STATE::STEPPING) InputID = INPUT::RIGHT_UP;
-	else if (UP_Key == 0 && LEFT_Key == 0 && DOWN_Key == 0 && RIGHT_Key == 0 && 
-		State != STATE::ATTACKING && State != STATE::BLOCKING && State != STATE::STUNNED && State != STATE::STEPPING && State != STATE::KNOCKED_DOWN && State != STATE::GETTING_UP)
-	{
-		State = STATE::IDLE;
-		InputID = INPUT::IDLE;
-	}
-
-	if (State != STATE::ATTACKING && State != STATE::BLOCKING && Stamina < 255-staminaRegeneration && State != STATE::STEPPING)
-		Stamina += staminaRegeneration;
-
 	if (steppingFrameTime > 0)
 	{
 		steppingFrameTime--;
@@ -253,6 +179,88 @@ void AFighterPawn::Tick(float DeltaTime)
 			RIGHT_Key = false;
 		}
 	}
+}
+
+// Called every frame
+void AFighterPawn::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	if (State == STATE::ATTACKING)
+	{
+		FVector startMinAngle = GetActorLocation() + (GetActorRightVector() * Attacks[static_cast<uint8>(attackType)].Parts[currentPartsIndex].minDist);
+		FVector endMinAngle = GetActorLocation() + (GetActorRightVector() * Attacks[static_cast<uint8>(attackType)].Parts[currentPartsIndex].maxDist);
+		endMinAngle.Y = std::sin(FMath::DegreesToRadians(Attacks[static_cast<uint8>(attackType)].Parts[currentPartsIndex].minAngle));
+
+		FVector startMaxAngle = GetActorLocation() + (GetActorRightVector() * Attacks[static_cast<uint8>(attackType)].Parts[currentPartsIndex].minDist);
+		FVector endMaxAngle = GetActorLocation() + (GetActorRightVector() * Attacks[static_cast<uint8>(attackType)].Parts[currentPartsIndex].maxDist);
+		endMaxAngle.Y = std::sin(FMath::DegreesToRadians(Attacks[static_cast<uint8>(attackType)].Parts[currentPartsIndex].maxAngle));
+
+		DrawDebugLine
+		(
+			GetWorld(),
+			startMinAngle,
+			endMinAngle,
+			FColor::Red,
+			false,
+			1,
+			1,
+			1);
+		DrawDebugLine
+		(
+			GetWorld(),
+			startMaxAngle,
+			endMaxAngle,
+			FColor::Red,
+			false,
+			1,
+			1,
+			1);
+	}
+	/*if (inputBufferIndex < inputBufferSize) 
+	{
+		inputBuffer.push_back(INPUT::IDLE);
+		inputBufferIndex++;
+	}
+	else
+	{
+		inputBuffer.erase(inputBuffer.begin());
+		inputBuffer.push_back(INPUT::IDLE);
+	}
+
+
+	for (auto &a : inputBuffer)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%i"),a)
+	}
+	UE_LOG(LogTemp, Warning, TEXT("---------"))*/
+
+	if (UP_Key == 1 && LEFT_Key == 0 && DOWN_Key == 0 && RIGHT_Key == 0 && 
+		State == STATE::MOVING) InputID = INPUT::UP;
+	else if (UP_Key == 1 && LEFT_Key == 1 && DOWN_Key == 0 && RIGHT_Key == 0 && 
+		State == STATE::MOVING) InputID = INPUT::UP_LEFT;
+	else if (LEFT_Key == 1 && UP_Key == 0 && DOWN_Key == 0 && RIGHT_Key == 0 && 
+		State == STATE::MOVING) InputID = INPUT::LEFT;
+	else if (LEFT_Key == 1 && DOWN_Key == 1 && UP_Key == 0 && RIGHT_Key == 0 && 
+		State == STATE::MOVING) InputID = INPUT::LEFT_DOWN;
+	else if (DOWN_Key == 1 && UP_Key == 0 && RIGHT_Key == 0 && LEFT_Key == 0 && 
+		State == STATE::MOVING) InputID = INPUT::DOWN;
+	else if (DOWN_Key == 1 && RIGHT_Key == 1 && UP_Key == 0 && LEFT_Key == 0 && 
+		State == STATE::MOVING) InputID = INPUT::DOWN_RIGHT;
+	else if (RIGHT_Key == 1 && UP_Key == 0 && LEFT_Key == 0 && DOWN_Key == 0 && 
+		State == STATE::MOVING) InputID = INPUT::RIGHT;
+	else if (RIGHT_Key == 1 && UP_Key == 1 && LEFT_Key == 0 && DOWN_Key == 0 && 
+		State == STATE::MOVING) InputID = INPUT::RIGHT_UP;
+	else if (UP_Key == 0 && LEFT_Key == 0 && DOWN_Key == 0 && RIGHT_Key == 0 && 
+		State != STATE::ATTACKING && State != STATE::BLOCKING && State != STATE::STUNNED && State != STATE::STEPPING && State != STATE::KNOCKED_DOWN && State != STATE::GETTING_UP)
+	{
+		State = STATE::IDLE;
+		InputID = INPUT::IDLE;
+	}
+
+	if (State != STATE::ATTACKING && State != STATE::BLOCKING && Stamina < 255-staminaRegeneration && State != STATE::STEPPING)
+		Stamina += staminaRegeneration;
+
+	testSideStep();
 }
 
 // Called to bind functionality to input
@@ -484,7 +492,6 @@ void AFighterPawn::ReleasedD()
 
 void AFighterPawn::PressedLight() 
 {
-	inputBufferKey = INPUT::LIGHT;
 	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING && Stamina >= Attacks[static_cast<uint8>(ATTACK_TYPE::LIGHT)].staminaCost && State != STATE::STEPPING)
 	{
 		State = STATE::ATTACKING;
@@ -496,7 +503,6 @@ void AFighterPawn::PressedLight()
 
 void AFighterPawn::PressedMedium() 
 {
-	inputBufferKey = INPUT::MEDIUM;
 	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING && Stamina >= Attacks[static_cast<uint8>(ATTACK_TYPE::MEDIUM)].staminaCost && State != STATE::STEPPING)
 	{
 		State = STATE::ATTACKING;
@@ -508,7 +514,6 @@ void AFighterPawn::PressedMedium()
 
 void AFighterPawn::PressedHeavy() 
 {
-	inputBufferKey = INPUT::HEAVY;
 	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING && Stamina >= Attacks[static_cast<uint8>(ATTACK_TYPE::HEAVY)].staminaCost && State != STATE::STEPPING)
 	{
 		State = STATE::ATTACKING;
@@ -520,7 +525,6 @@ void AFighterPawn::PressedHeavy()
 
 void AFighterPawn::PressedSpecial() 
 {
-	inputBufferKey = INPUT::SPECIAL;
 	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING &&  specialMeter >= Attacks[static_cast<uint8>(ATTACK_TYPE::SPECIAL)].staminaCost && State != STATE::STEPPING)
 	{
 		State = STATE::ATTACKING;

@@ -18,7 +18,6 @@ void ASamurai::Tick(float DeltaTime)
 void ASamurai::PressedSpecial()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Samurai used SPECIAL!"))
-	inputBufferKey = INPUT::SPECIAL;
 	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING &&  specialMeter >= Attacks[static_cast<uint8>(ATTACK_TYPE::SPECIAL)].staminaCost && State != STATE::STEPPING)
 	{
 		State = STATE::ATTACKING;
