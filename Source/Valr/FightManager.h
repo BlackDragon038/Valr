@@ -11,7 +11,7 @@
 #include "FightManager.generated.h"
 
 UENUM(BlueprintType)
-enum class ROUND_STATE : uint8 { ROUND_OVER_PLAYER1_WINS, ROUND_OVER_PLAYER2_WINS, ROUND_RESTARTING, ROUND_ABOUT_TO_START, ROUND_ONGOING };
+enum class ROUND_STATE : uint8 { ROUND_OVER_PLAYER1_WINS, ROUND_OVER_PLAYER2_WINS, ROUND_DRAW, ROUND_RESTARTING, ROUND_ABOUT_TO_START, ROUND_ONGOING };
 
 UCLASS()
 class VALR_API AFightManager : public APawn
@@ -52,14 +52,11 @@ public:
 	uint8 t = 100;
 	uint8 n = 0;
 
-	bool bPlayer1IsHit = false;
-	bool bPlayer2IsHit = false;
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	void processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector toP1, FVector toP2, bool &bOpponentIsHit);
+	void processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector toP1, FVector toP2);
 
 	void testRoundStatus();
 

@@ -67,6 +67,9 @@ void AFighterPawn::Reset()
 	inputBuffer.clear();
 	currentFrameOfAttack = 0;
 	currentPartsIndex = 0;
+	bOpponentIsHit = false;
+	bResetAnimation = false;
+	bCanCombo = true;
 }
 
 void AFighterPawn::AttackReset()
@@ -216,6 +219,7 @@ void AFighterPawn::Tick(float DeltaTime)
 			1,
 			1);
 	}
+
 	/*if (inputBufferIndex < inputBufferSize) 
 	{
 		inputBuffer.push_back(INPUT::IDLE);
@@ -269,6 +273,13 @@ void AFighterPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
+void AFighterPawn::WalkBackToPosition(FVector Pos)
+{
+	LEFT_Key = true;
+	SetActorLocation(GetActorLocation() + GetActorForwardVector() * -MovementSpeed);
+	State = STATE::MOVING;
+}
+
 void AFighterPawn::AxisW(float Axis)
 {
 	if (State != STATE::ATTACKING && State != STATE::BLOCKING && State != STATE::STUNNED && Stamina > 10 && State != STATE::STEPPING)
@@ -278,7 +289,8 @@ void AFighterPawn::AxisW(float Axis)
 		if (UP_Key)
 		{
 			SetActorLocation(GetActorLocation() + GetActorRightVector() * -MovementSpeed);
-			State = STATE::MOVING;
+			if (!DOWN_Key) State = STATE::MOVING;
+			else State = STATE::IDLE;
 		}
 
 		if (InputID == INPUT::UP && Stamina > 100)
@@ -306,9 +318,13 @@ void AFighterPawn::AxisA(float Axis)
 
 		if (LEFT_Key)
 		{
-			Stamina -= 3;
 			SetActorLocation(GetActorLocation() + GetActorForwardVector() * -MovementSpeed);
-			State = STATE::MOVING;
+			if (!RIGHT_Key)
+			{
+				State = STATE::MOVING;
+				Stamina -= 3;
+			}
+			else State = STATE::IDLE;
 		}
 
 		if (InputID == INPUT::LEFT && Stamina > 100)
@@ -337,7 +353,8 @@ void AFighterPawn::AxisS(float Axis)
 		if (DOWN_Key)
 		{
 			SetActorLocation(GetActorLocation() + GetActorRightVector() * MovementSpeed);
-			State = STATE::MOVING;
+			if (!UP_Key) State = STATE::MOVING;
+			else State = STATE::IDLE;
 		}
 
 		if (InputID == INPUT::DOWN && Stamina > 100)
@@ -366,7 +383,8 @@ void AFighterPawn::AxisD(float Axis)
 		if (RIGHT_Key)
 		{
 			SetActorLocation(GetActorLocation() + GetActorForwardVector() * MovementSpeed);
-			State = STATE::MOVING;
+			if (!LEFT_Key) State = STATE::MOVING;
+			else State = STATE::IDLE;
 		}
 
 		if (InputID == INPUT::RIGHT && Stamina > 100)
@@ -492,7 +510,23 @@ void AFighterPawn::ReleasedD()
 
 void AFighterPawn::PressedLight() 
 {
-	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING && Stamina >= Attacks[static_cast<uint8>(ATTACK_TYPE::LIGHT)].staminaCost && State != STATE::STEPPING)
+	if (State == STATE::ATTACKING && bCanCombo && Stamina >= Attacks[static_cast<uint8>(ATTACK_TYPE::LIGHT)].staminaCost)
+	{
+		if (currentFrameOfAttack >= Attacks[static_cast<uint8>(attackType)].AttackTotalFrameCount / 2)
+		{
+			currentFrameOfAttack = 0;
+			currentPartsIndex = 0;
+			bResetAnimation = true;
+			bOpponentIsHit = false;
+			InputID = INPUT::LIGHT;
+			attackType = ATTACK_TYPE::LIGHT;
+			if (Stamina >= Attacks[static_cast<uint8>(attackType)].staminaCost)
+				Stamina -= Attacks[static_cast<uint8>(attackType)].staminaCost;
+		}
+		else
+			bCanCombo = false;
+	}
+	else if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING && Stamina >= Attacks[static_cast<uint8>(ATTACK_TYPE::LIGHT)].staminaCost && State != STATE::STEPPING)
 	{
 		State = STATE::ATTACKING;
 		InputID = INPUT::LIGHT;
@@ -503,7 +537,23 @@ void AFighterPawn::PressedLight()
 
 void AFighterPawn::PressedMedium() 
 {
-	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING && Stamina >= Attacks[static_cast<uint8>(ATTACK_TYPE::MEDIUM)].staminaCost && State != STATE::STEPPING)
+	if (State == STATE::ATTACKING && bCanCombo && Stamina >= Attacks[static_cast<uint8>(ATTACK_TYPE::MEDIUM)].staminaCost)
+	{
+		if (currentFrameOfAttack >= Attacks[static_cast<uint8>(attackType)].AttackTotalFrameCount / 2)
+		{
+			currentFrameOfAttack = 0;
+			currentPartsIndex = 0;
+			bResetAnimation = true;
+			bOpponentIsHit = false;
+			InputID = INPUT::MEDIUM;
+			attackType = ATTACK_TYPE::MEDIUM;
+			if (Stamina >= Attacks[static_cast<uint8>(attackType)].staminaCost)
+				Stamina -= Attacks[static_cast<uint8>(attackType)].staminaCost;
+		}
+		else
+			bCanCombo = false;
+	}
+	else if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING && Stamina >= Attacks[static_cast<uint8>(ATTACK_TYPE::MEDIUM)].staminaCost && State != STATE::STEPPING)
 	{
 		State = STATE::ATTACKING;
 		InputID = INPUT::MEDIUM;
@@ -514,7 +564,23 @@ void AFighterPawn::PressedMedium()
 
 void AFighterPawn::PressedHeavy() 
 {
-	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING && Stamina >= Attacks[static_cast<uint8>(ATTACK_TYPE::HEAVY)].staminaCost && State != STATE::STEPPING)
+	if (State == STATE::ATTACKING && bCanCombo && Stamina >= Attacks[static_cast<uint8>(ATTACK_TYPE::HEAVY)].staminaCost)
+	{
+		if (currentFrameOfAttack >= Attacks[static_cast<uint8>(attackType)].AttackTotalFrameCount / 2)
+		{
+			currentFrameOfAttack = 0;
+			currentPartsIndex = 0;
+			bResetAnimation = true;
+			bOpponentIsHit = false; 
+			InputID = INPUT::HEAVY;
+			attackType = ATTACK_TYPE::HEAVY;
+			if (Stamina >= Attacks[static_cast<uint8>(attackType)].staminaCost)
+				Stamina -= Attacks[static_cast<uint8>(attackType)].staminaCost;
+		}
+		else
+			bCanCombo = false;
+	}
+	else if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING && Stamina >= Attacks[static_cast<uint8>(ATTACK_TYPE::HEAVY)].staminaCost && State != STATE::STEPPING)
 	{
 		State = STATE::ATTACKING;
 		InputID = INPUT::HEAVY;
