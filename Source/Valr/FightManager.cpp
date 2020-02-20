@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Code by Sultan Iljasov, 2020.
 
 
 #include "FightManager.h"
@@ -7,6 +7,7 @@
 #include <EngineGlobals.h>
 #include <Runtime/Engine/Classes/Engine/Engine.h>
 #include "GameFramework/PlayerController.h"
+#include "Kismet/GameplayStatics.h"
 
 #include "Kismet/KismetMathLibrary.h"
 
@@ -76,7 +77,7 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 				P1->State = STATE::STUNNED;
 				P1->currentFrameOfAttack = P2->BlockData.blockStunRate;
 				P1->stunPush = P2->BlockData.blockPushPower;
-				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), P1->hitParticle, P1->GetActorLocation() + FVector(0, 0, 120) + toP2 * 2, toP2.Rotation());
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), P1->hitParticle, { FRotator(),FVector(P1->GetActorLocation() + FVector(0, 0, 120) + toP2 * 25),FVector(0.25,0.25,0.25) });
 			}
 			else
 			{
@@ -87,7 +88,7 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 					P2->State = STATE::STUNNED;
 					P2->currentFrameOfAttack = P1->Attacks[static_cast<uint8>(P1->attackType)].StunRate;
 					P2->stunPush = P1->Attacks[static_cast<uint8>(P1->attackType)].StunPushPower;
-					UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), P2->hitParticle, P2->GetActorLocation() + FVector(0, 0, 120) + toP1 * 2, toP1.Rotation());
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), P2->hitParticle, { FRotator(),FVector(P2->GetActorLocation() + FVector(0, 0, 120) + toP1 * 25),FVector(0.25,0.25,0.25) });
 					P1->bOpponentIsHit = true;
 					uint8 specialCharge = P1->Attacks[static_cast<uint8>(P1->attackType)].Damage* P2->specialChargeMultiplier;
 					if (P2->specialMeter <= 255-specialCharge) P2->specialMeter += specialCharge;
@@ -116,6 +117,7 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 		if (P1->currentFrameOfAttack > 0)
 		{
 			P1->currentFrameOfAttack--;
+			if (P1->GetActorLocation().Size() < P1->maxDistanceFromCenter - P1->MovementSpeed)
 			P1->SetActorLocation(P1->GetActorLocation() + (toP1 * (P1->currentFrameOfAttack * ((float)P1->stunPush / 100.f))));
 		}
 		else
@@ -196,52 +198,63 @@ void AFightManager::calculateTimers(FVector toP1, FVector toP2)
 			roundState = ROUND_STATE::ROUND_OVER_PLAYER1_WINS;
 			DisableInput(GetWorld()->GetFirstPlayerController());
 		}
-		else if (Player1->State != STATE::KNOCKED_DOWN && Player2->State != STATE::KNOCKED_DOWN) roundState = ROUND_STATE::ROUND_DRAW;
+		else if (roundTimer == 3600) roundState = ROUND_STATE::ROUND_DRAW;
 		timeToStart--;
 		return;
 	}
 	else if (timeToStart >= (60))
 	{
+		FVector MiddleVector = (Player1->GetActorLocation() + Player2->GetActorLocation()) / 2;
 		if (Player1->State == STATE::KNOCKED_DOWN)
 		{
 			Player1->State = STATE::GETTING_UP;
 			Player2->Reset();
+			if (Player1->GetActorLocation().Size() > Player1->maxDistanceFromCenter * 0.9f || Player2->GetActorLocation().Size() > Player2->maxDistanceFromCenter * 0.9f)
+				Camera->SpringArm->TargetArmLength = Camera->initialCameraDistance;
 		}
 		else if (Player2->State == STATE::KNOCKED_DOWN)
 		{
 			Player2->State = STATE::GETTING_UP;
 			Player1->Reset();
+			if (Player1->GetActorLocation().Size() > Player1->maxDistanceFromCenter * 0.9f || Player2->GetActorLocation().Size() > Player2->maxDistanceFromCenter * 0.9f)
+				Camera->SpringArm->TargetArmLength = Camera->initialCameraDistance;
 		}
-		if (Player1->State == STATE::GETTING_UP)
+		if (Player1->GetActorLocation().Size() < Player1->maxDistanceFromCenter * 0.9f && Player2->GetActorLocation().Size() < Player2->maxDistanceFromCenter * 0.9f)
 		{
-			FVector MiddleVector = (Player1->GetActorLocation() + Player2->GetActorLocation()) / 2;
-			Player1->SetActorRotation(FMath::Lerp(Player1->GetActorRotation(), toP2.Rotation(), 0.05f));
-			if ((Player2->GetActorLocation() - Player1->GetActorLocation()).Size() < Camera->closestDistance) 
-				Player2->WalkBackToPosition(FVector(MiddleVector.X + toP2.X * (Camera->closestDistance / 2), MiddleVector.Y + toP2.Y * (Camera->closestDistance / 2), MiddleVector.Z));
-			else
+			if (Player1->State == STATE::GETTING_UP)
 			{
-				Player2->LEFT_Key = false;
-				Player2->State = STATE::IDLE;
+				Player1->SetActorRotation(FMath::Lerp(Player1->GetActorRotation(), toP2.Rotation(), 0.05f));
+				if ((Player2->GetActorLocation() - Player1->GetActorLocation()).Size() < defaultDistanceBetweenPlayers)
+					Player2->WalkBackToPosition(FVector(MiddleVector.X + toP2.X * (defaultDistanceBetweenPlayers / 2), MiddleVector.Y + toP2.Y * (defaultDistanceBetweenPlayers / 2), MiddleVector.Z));
+				else
+				{
+					Player2->LEFT_Key = false;
+					Player2->State = STATE::IDLE;
+				}
+			}
+			else if (Player2->State == STATE::GETTING_UP)
+			{
+				Player2->SetActorRotation(FMath::Lerp(Player2->GetActorRotation(), toP1.Rotation(), 0.05f));
+				if ((Player2->GetActorLocation() - Player1->GetActorLocation()).Size() < defaultDistanceBetweenPlayers)
+					Player1->WalkBackToPosition(FVector(MiddleVector.X + toP1.X * (defaultDistanceBetweenPlayers / 2), MiddleVector.Y + toP1.Y * (defaultDistanceBetweenPlayers / 2), MiddleVector.Z));
+				else
+				{
+					Player1->LEFT_Key = false;
+					Player1->State = STATE::IDLE;
+				}
 			}
 		}
-		else if (Player2->State == STATE::GETTING_UP)
+		else
 		{
-			FVector MiddleVector = (Player1->GetActorLocation() + Player2->GetActorLocation()) / 2;
-			Player2->SetActorRotation(FMath::Lerp(Player2->GetActorRotation(), toP1.Rotation(), 0.05f));
-			if ((Player2->GetActorLocation() - Player1->GetActorLocation()).Size() < Camera->closestDistance) 
-				Player1->WalkBackToPosition(FVector(MiddleVector.X + toP1.X * (Camera->closestDistance / 2), MiddleVector.Y + toP1.Y * (Camera->closestDistance / 2), MiddleVector.Z));
-			else
-			{
-				Player1->LEFT_Key = false;
-				Player1->State = STATE::IDLE;
-			}
+			Player1->SetActorLocation(FVector(-(defaultDistanceBetweenPlayers / 2), 0, 0));
+			Player2->SetActorLocation(FVector((defaultDistanceBetweenPlayers / 2), 0, 0));
+			Player1->SetActorRotation(Player2->GetActorLocation().Rotation());
+			Player2->SetActorRotation(Player1->GetActorLocation().Rotation());
 		}
-		Camera->SetActorLocation(FVector((Player1->GetActorLocation().X + Player2->GetActorLocation().X) * 0.5f, (Player1->GetActorLocation().Y + Player2->GetActorLocation().Y) * 0.5f, Player1->GetActorLocation().Z + Camera->Height));
-		Camera->SpringArm->TargetArmLength = FMath::Lerp(Camera->SpringArm->TargetArmLength, FVector::Distance(Player1->GetActorLocation(), Player2->GetActorLocation()) * 0.75f, 0.05f);
-		FVector MiddleVector = Player2->GetActorLocation() - Player1->GetActorLocation();
+		Camera->SetActorLocation(FVector(MiddleVector.X, MiddleVector.Y, MiddleVector.Z + Camera->Height));
+		Camera->SpringArm->TargetArmLength = FMath::Lerp(Camera->SpringArm->TargetArmLength, defaultDistanceBetweenPlayers * Camera->closestDistance, 0.06f);
 		FVector PerpendicularVector = { MiddleVector.Y,-MiddleVector.X,MiddleVector.Z };
 		PerpendicularVector.Normalize();
-		//Camera->SetActorRotation(FRotator(PerpendicularVector.Rotation().Roll, PerpendicularVector.Rotation().Yaw, PerpendicularVector.Rotation().Pitch));
 		DisableInput(GetWorld()->GetFirstPlayerController());
 		roundState = ROUND_STATE::ROUND_RESTARTING;
 		timeToStart--;
@@ -285,7 +298,7 @@ void AFightManager::Tick(float DeltaTime)
 	toPlayer1.Normalize();
 	toPlayer2.Normalize();
 
-	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Orange, FString::Printf(TEXT("Player 2 Angle: %f  -  Player 2 to Player 1 Distance: %f"), Angle(Player2->GetActorRightVector(), toPlayer1), (Player1->GetActorLocation() - Player2->GetActorLocation()).Size()));
+	/*GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Orange, FString::Printf(TEXT("Player 2 Angle: %f  -  Player 2 to Player 1 Distance: %f"), Angle(Player2->GetActorRightVector(), toPlayer1), (Player1->GetActorLocation() - Player2->GetActorLocation()).Size()));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Blue, FString::Printf(TEXT("Player 2 State: %i"), Player2->State));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Blue, FString::Printf(TEXT("Player 2 InputID: %i"), Player2->InputID));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Orange, FString::Printf(TEXT("Player 2 CurrentFrameOfAttack: %i"), Player2->currentFrameOfAttack));
@@ -299,40 +312,16 @@ void AFightManager::Tick(float DeltaTime)
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Red, FString::Printf(TEXT("Player 1 InputID: %i"), Player1->InputID));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Green, FString::Printf(TEXT("Player 1 CurrentFrameOfAttack: %i"), Player1->currentFrameOfAttack));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Green, FString::Printf(TEXT("Player 1 CurrentPartsIndex: %i"), Player1->currentPartsIndex));
-	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Red, FString::Printf(TEXT("Player 1 AttackType: %i"), Player1->attackType));
+	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Red, FString::Printf(TEXT("Player 1 AttackType: %i"), Player1->attackType));*/
 
 	calculateTimers(toPlayer1,toPlayer2);
 
 	Camera->SetActorLocation(FVector((Player1->GetActorLocation().X + Player2->GetActorLocation().X) * 0.5f, (Player1->GetActorLocation().Y + Player2->GetActorLocation().Y) * 0.5f, Player1->GetActorLocation().Z + Camera->Height));
-	if (timeToStart == 0) Camera->SpringArm->TargetArmLength = FVector::Distance(Player1->GetActorLocation(), Player2->GetActorLocation()) * 0.75;
-	if (Camera->SpringArm->TargetArmLength < Camera->closestDistance) Camera->SpringArm->TargetArmLength = Camera->closestDistance;
-	
-	/*if (Player2->State != STATE::STUNNED)
-	{
-		if (t == 0)
-		{
-			n = FMath::RandRange(0, 9);
-			t = 100;
-		}
-		else
-		{
-			t--;
-			switch (n)
-			{
-				case 0: Player2->AxisW(1); Player2->AxisA(0); Player2->AxisS(0); Player2->AxisD(0); break;
-				case 1: Player2->AxisW(0); Player2->AxisA(1); Player2->AxisS(0); Player2->AxisD(0); break;
-				case 2: Player2->AxisW(0); Player2->AxisA(0); Player2->AxisS(1); Player2->AxisD(0); break;
-				case 3: Player2->AxisW(0); Player2->AxisA(0); Player2->AxisS(0); Player2->AxisD(1); break;
-				case 4: Player2->PressedLight(); break;
-				case 5: Player2->PressedMedium(); break;
-				case 6: Player2->PressedHeavy(); break;
-				case 7: Player2->PressedSpecial(); break;
-				case 8: Player2->PressedBlock(); break;
-				case 9: Player2->ReleasedBlock(); break;
-			}
-		}
-	}*/
+	if (roundState == ROUND_STATE::ROUND_ONGOING && FVector::Distance(Player1->GetActorLocation(), Player2->GetActorLocation()) * Camera->closestDistance > defaultDistanceBetweenPlayers * Camera->closestDistance)
+		Camera->SpringArm->TargetArmLength = FVector::Distance(Player1->GetActorLocation(), Player2->GetActorLocation()) * Camera->closestDistance;
 
+	UE_LOG(LogTemp,Warning, TEXT("default: %f  -  Actual: %f  -  Arm Length: %f"), defaultDistanceBetweenPlayers * Camera->closestDistance, FVector::Distance(Player1->GetActorLocation(), Player2->GetActorLocation()) * Camera->closestDistance, Camera->SpringArm->TargetArmLength)
+	
 	FVector MiddleVector = Player2->GetActorLocation() - Player1->GetActorLocation();
 	FVector PerpendicularVector = { MiddleVector.Y,-MiddleVector.X,MiddleVector.Z };
 	PerpendicularVector.Normalize();

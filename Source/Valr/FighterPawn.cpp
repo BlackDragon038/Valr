@@ -1,8 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
+// Code by Sultan Iljasov, 2020.
 
 #include "FighterPawn.h"
-#include "DrawDebugHelpers.h"
 #include "Kismet/GameplayStatics.h"
 
 #include <cmath>
@@ -188,37 +186,6 @@ void AFighterPawn::testSideStep()
 void AFighterPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (State == STATE::ATTACKING)
-	{
-		FVector startMinAngle = GetActorLocation() + (GetActorRightVector() * Attacks[static_cast<uint8>(attackType)].Parts[currentPartsIndex].minDist);
-		FVector endMinAngle = GetActorLocation() + (GetActorRightVector() * Attacks[static_cast<uint8>(attackType)].Parts[currentPartsIndex].maxDist);
-		endMinAngle.Y = std::sin(FMath::DegreesToRadians(Attacks[static_cast<uint8>(attackType)].Parts[currentPartsIndex].minAngle));
-
-		FVector startMaxAngle = GetActorLocation() + (GetActorRightVector() * Attacks[static_cast<uint8>(attackType)].Parts[currentPartsIndex].minDist);
-		FVector endMaxAngle = GetActorLocation() + (GetActorRightVector() * Attacks[static_cast<uint8>(attackType)].Parts[currentPartsIndex].maxDist);
-		endMaxAngle.Y = std::sin(FMath::DegreesToRadians(Attacks[static_cast<uint8>(attackType)].Parts[currentPartsIndex].maxAngle));
-
-		DrawDebugLine
-		(
-			GetWorld(),
-			startMinAngle,
-			endMinAngle,
-			FColor::Red,
-			false,
-			1,
-			1,
-			1);
-		DrawDebugLine
-		(
-			GetWorld(),
-			startMaxAngle,
-			endMaxAngle,
-			FColor::Red,
-			false,
-			1,
-			1,
-			1);
-	}
 
 	/*if (inputBufferIndex < inputBufferSize) 
 	{
@@ -284,28 +251,38 @@ void AFighterPawn::AxisW(float Axis)
 {
 	if (State != STATE::ATTACKING && State != STATE::BLOCKING && State != STATE::STUNNED && Stamina > 10 && State != STATE::STEPPING)
 	{
-		UP_Key = static_cast<bool>(Axis);
-
-		if (UP_Key)
+		if (GetActorLocation().Size() < maxDistanceFromCenter - MovementSpeed)
 		{
-			SetActorLocation(GetActorLocation() + GetActorRightVector() * -MovementSpeed);
-			if (!DOWN_Key) State = STATE::MOVING;
-			else State = STATE::IDLE;
+			UP_Key = static_cast<bool>(Axis);
+
+			if (UP_Key)
+			{
+				SetActorLocation(GetActorLocation() + GetActorRightVector() * -MovementSpeed);
+				if (!DOWN_Key) State = STATE::MOVING;
+				else State = STATE::IDLE;
+			}
+
+			if (InputID == INPUT::UP && Stamina > 100)
+			{
+				if (KeyW == KEY_STATE::RESET && UP_Key)
+				{
+					KeyW = KEY_STATE::PRESSED_ONCE;
+					steppingFrameTime = 10;
+				}
+				else if (KeyW == KEY_STATE::PRESSED_ONCE && !UP_Key)
+					KeyW = KEY_STATE::RELEASED;
+				else if (KeyW == KEY_STATE::RELEASED && UP_Key)
+				{
+					KeyW = KEY_STATE::PRESSED_TWICE;
+				}
+			}
 		}
-
-		if (InputID == INPUT::UP && Stamina > 100)
+		else
 		{
-			if (KeyW == KEY_STATE::RESET && UP_Key)
-			{
-				KeyW = KEY_STATE::PRESSED_ONCE;
-				steppingFrameTime = 10;
-			}
-			else if (KeyW == KEY_STATE::PRESSED_ONCE && !UP_Key)
-				KeyW = KEY_STATE::RELEASED;
-			else if (KeyW == KEY_STATE::RELEASED && UP_Key)
-			{
-				KeyW = KEY_STATE::PRESSED_TWICE;
-			}
+			UP_Key = static_cast<bool>(Axis);
+			FVector toOrigin = -GetActorLocation();
+			toOrigin.Normalize();
+			SetActorLocation(GetActorLocation() + toOrigin * MovementSpeed);
 		}
 	}
 }
@@ -314,32 +291,42 @@ void AFighterPawn::AxisA(float Axis)
 {
 	if (State != STATE::ATTACKING && State != STATE::BLOCKING && State != STATE::STUNNED && Stamina > 10 && State != STATE::STEPPING && Stamina > 25)
 	{
-		LEFT_Key = static_cast<bool>(Axis);
-
-		if (LEFT_Key)
+		if (GetActorLocation().Size() < maxDistanceFromCenter - MovementSpeed)
 		{
-			SetActorLocation(GetActorLocation() + GetActorForwardVector() * -MovementSpeed);
-			if (!RIGHT_Key)
+			LEFT_Key = static_cast<bool>(Axis);
+
+			if (LEFT_Key)
 			{
-				State = STATE::MOVING;
-				Stamina -= 3;
+				SetActorLocation(GetActorLocation() + GetActorForwardVector() * -MovementSpeed);
+				if (!RIGHT_Key)
+				{
+					State = STATE::MOVING;
+					Stamina -= 3;
+				}
+				else State = STATE::IDLE;
 			}
-			else State = STATE::IDLE;
+
+			if (InputID == INPUT::LEFT && Stamina > 100)
+			{
+				if (KeyA == KEY_STATE::RESET && LEFT_Key)
+				{
+					KeyA = KEY_STATE::PRESSED_ONCE;
+					steppingFrameTime = 10;
+				}
+				else if (KeyA == KEY_STATE::PRESSED_ONCE && !LEFT_Key)
+					KeyA = KEY_STATE::RELEASED;
+				else if (KeyA == KEY_STATE::RELEASED && LEFT_Key)
+				{
+					KeyA = KEY_STATE::PRESSED_TWICE;
+				}
+			}
 		}
-
-		if (InputID == INPUT::LEFT && Stamina > 100)
+		else
 		{
-			if (KeyA == KEY_STATE::RESET && LEFT_Key)
-			{
-				KeyA = KEY_STATE::PRESSED_ONCE;
-				steppingFrameTime = 10;
-			}
-			else if (KeyA == KEY_STATE::PRESSED_ONCE && !LEFT_Key)
-				KeyA = KEY_STATE::RELEASED;
-			else if (KeyA == KEY_STATE::RELEASED && LEFT_Key)
-			{
-				KeyA = KEY_STATE::PRESSED_TWICE;
-			}
+			LEFT_Key = static_cast<bool>(Axis); 
+			FVector toOrigin = -GetActorLocation();
+			toOrigin.Normalize();
+			SetActorLocation(GetActorLocation() + toOrigin * MovementSpeed);
 		}
 	}
 }
@@ -348,28 +335,38 @@ void AFighterPawn::AxisS(float Axis)
 {
 	if (State != STATE::ATTACKING && State != STATE::BLOCKING && State != STATE::STUNNED && Stamina > 10 && State != STATE::STEPPING)
 	{
-		DOWN_Key = static_cast<bool>(Axis);
-
-		if (DOWN_Key)
+		if (GetActorLocation().Size() < maxDistanceFromCenter - MovementSpeed)
 		{
-			SetActorLocation(GetActorLocation() + GetActorRightVector() * MovementSpeed);
-			if (!UP_Key) State = STATE::MOVING;
-			else State = STATE::IDLE;
+			DOWN_Key = static_cast<bool>(Axis);
+
+			if (DOWN_Key)
+			{
+				SetActorLocation(GetActorLocation() + GetActorRightVector() * MovementSpeed);
+				if (!UP_Key) State = STATE::MOVING;
+				else State = STATE::IDLE;
+			}
+
+			if (InputID == INPUT::DOWN && Stamina > 100)
+			{
+				if (KeyS == KEY_STATE::RESET && DOWN_Key)
+				{
+					KeyS = KEY_STATE::PRESSED_ONCE;
+					steppingFrameTime = 10;
+				}
+				else if (KeyS == KEY_STATE::PRESSED_ONCE && !DOWN_Key)
+					KeyS = KEY_STATE::RELEASED;
+				else if (KeyS == KEY_STATE::RELEASED && DOWN_Key)
+				{
+					KeyS = KEY_STATE::PRESSED_TWICE;
+				}
+			}
 		}
-
-		if (InputID == INPUT::DOWN && Stamina > 100)
+		else
 		{
-			if (KeyS == KEY_STATE::RESET && DOWN_Key)
-			{
-				KeyS = KEY_STATE::PRESSED_ONCE;
-				steppingFrameTime = 10;
-			}
-			else if (KeyS == KEY_STATE::PRESSED_ONCE && !DOWN_Key)
-				KeyS = KEY_STATE::RELEASED;
-			else if (KeyS == KEY_STATE::RELEASED && DOWN_Key)
-			{
-				KeyS = KEY_STATE::PRESSED_TWICE;
-			}
+			DOWN_Key = static_cast<bool>(Axis);
+			FVector toOrigin = -GetActorLocation();
+			toOrigin.Normalize();
+			SetActorLocation(GetActorLocation() + toOrigin * MovementSpeed);
 		}
 	}
 }
@@ -378,28 +375,38 @@ void AFighterPawn::AxisD(float Axis)
 {
 	if (State != STATE::ATTACKING && State != STATE::BLOCKING && State != STATE::STUNNED && Stamina > 10 && State != STATE::STEPPING)
 	{
-		RIGHT_Key = static_cast<bool>(Axis);
-
-		if (RIGHT_Key)
+		if (GetActorLocation().Size() < maxDistanceFromCenter - MovementSpeed)
 		{
-			SetActorLocation(GetActorLocation() + GetActorForwardVector() * MovementSpeed);
-			if (!LEFT_Key) State = STATE::MOVING;
-			else State = STATE::IDLE;
+			RIGHT_Key = static_cast<bool>(Axis);
+
+			if (RIGHT_Key)
+			{
+				SetActorLocation(GetActorLocation() + GetActorForwardVector() * MovementSpeed);
+				if (!LEFT_Key) State = STATE::MOVING;
+				else State = STATE::IDLE;
+			}
+
+			if (InputID == INPUT::RIGHT && Stamina > 100)
+			{
+				if (KeyD == KEY_STATE::RESET && RIGHT_Key)
+				{
+					KeyD = KEY_STATE::PRESSED_ONCE;
+					steppingFrameTime = 10;
+				}
+				else if (KeyD == KEY_STATE::PRESSED_ONCE && !RIGHT_Key)
+					KeyD = KEY_STATE::RELEASED;
+				else if (KeyD == KEY_STATE::RELEASED && RIGHT_Key)
+				{
+					KeyD = KEY_STATE::PRESSED_TWICE;
+				}
+			}
 		}
-
-		if (InputID == INPUT::RIGHT && Stamina > 100)
+		else
 		{
-			if (KeyD == KEY_STATE::RESET && RIGHT_Key)
-			{
-				KeyD = KEY_STATE::PRESSED_ONCE;
-				steppingFrameTime = 10;
-			}
-			else if (KeyD == KEY_STATE::PRESSED_ONCE && !RIGHT_Key)
-				KeyD = KEY_STATE::RELEASED;
-			else if (KeyD == KEY_STATE::RELEASED && RIGHT_Key)
-			{
-				KeyD = KEY_STATE::PRESSED_TWICE;
-			}
+			RIGHT_Key = static_cast<bool>(Axis);
+			FVector toOrigin = -GetActorLocation();
+			toOrigin.Normalize();
+			SetActorLocation(GetActorLocation() + toOrigin * MovementSpeed);
 		}
 	}
 }

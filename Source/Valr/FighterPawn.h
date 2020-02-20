@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Code by Sultan Iljasov, 2020.
 
 #pragma once
 
@@ -103,7 +103,7 @@ public:
 		USceneComponent* Root;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		UNiagaraSystem* hitParticle;
+		UParticleSystem* hitParticle;
 
 	UPROPERTY(BlueprintReadOnly)
 		INPUT InputID = INPUT::IDLE;
@@ -119,6 +119,8 @@ public:
 		uint8 sideStepFrameTime = 20;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 		uint8 turnSpeed = 30;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+		float maxDistanceFromCenter = 1000.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Base Stats")
 		uint8 Stamina = 100;
 	UPROPERTY(BlueprintReadOnly)

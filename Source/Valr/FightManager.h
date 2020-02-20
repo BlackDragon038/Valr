@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Code by Sultan Iljasov, 2020.
 
 #pragma once
 
@@ -49,8 +49,8 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 		ROUND_STATE roundState;
 
-	uint8 t = 100;
-	uint8 n = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float defaultDistanceBetweenPlayers = 350;
 
 protected:
 	// Called when the game starts or when spawned

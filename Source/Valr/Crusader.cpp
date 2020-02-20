@@ -1,5 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
+// Code by Sultan Iljasov, 2020.
 
 #include "Crusader.h"
 

@@ -24,15 +24,15 @@ public:
 	ArtificialNN(int nIn, int nOut, int nHidden, int nPH, double a);
 	~ArtificialNN();
 
-	TArray<double> Train(TArray<double> inputValues, TArray<double> desiredOutput);
+	TArray<int> Train(TArray<int> inputValues, TArray<int> desiredOutput);
 
-	TArray<double> CalcOutput(TArray<double> inputValues);
+	TArray<int> CalcOutput(TArray<int> inputValues);
 
-	TArray<double> CalcOutput(TArray<double> inputValues, TArray<double> desiredOutput);
+	TArray<int> CalcOutput(TArray<int> inputValues, TArray<int> desiredOutput);
 
 	FString PrintWeights();
 
-	void UpdateWeights(TArray<double> outputs, TArray<double> desiredOutput);
+	void UpdateWeights(TArray<int> outputs, TArray<int> desiredOutput);
 
 	void LoadWeights( FString weightStr);
 

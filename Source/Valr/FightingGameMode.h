@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Code by Sultan Iljasov, 2020.
 
 #pragma once
 
@@ -9,9 +9,15 @@
 /**
  * 
  */
+UENUM(BlueprintType)
+enum class GAME_STATE : uint8 { SINGLEPLAYER, MULTIPLAYER};
+
 UCLASS()
 class VALR_API AFightingGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		GAME_STATE GameMode = GAME_STATE::SINGLEPLAYER;
 	
 };

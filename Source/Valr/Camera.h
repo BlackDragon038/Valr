@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Code by Sultan Iljasov, 2020.
 
 #pragma once
 
@@ -26,10 +26,13 @@ public:
 		USpringArmComponent* SpringArm;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float closestDistance = 350;
+		float closestDistance = 1.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float Height = 120;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float initialCameraDistance = 1000;
 
 protected:
 	// Called when the game starts or when spawned

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Code by Sultan Iljasov, 2020.
 
 
 #include "Camera.h"
@@ -11,7 +11,6 @@ ACamera::ACamera()
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraAttachmentArm"));
 	SpringArm->SetupAttachment(RootComponent);
-	SpringArm->TargetArmLength = 1000.0f;
 	SpringArm->bEnableCameraLag = true;
 	SpringArm->CameraLagSpeed = 0.5f;
 	SpringArm->bDoCollisionTest = false;
@@ -26,6 +25,7 @@ ACamera::ACamera()
 void ACamera::BeginPlay()
 {
 	Super::BeginPlay();
+	SpringArm->TargetArmLength = initialCameraDistance;
 }
 
 // Called every frame
