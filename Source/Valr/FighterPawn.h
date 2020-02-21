@@ -108,6 +108,8 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 		INPUT InputID = INPUT::IDLE;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Base Stats")
+		uint8 Lives = 3;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Base Stats")
 		uint8 Health = 255;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Base Stats")
 		uint8 inputBufferSize = 20;
@@ -178,6 +180,12 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bOpponentIsHit = false;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bNonStunnable = false;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bDisableInput = false;
 
 	bool bCanCombo = true;
 

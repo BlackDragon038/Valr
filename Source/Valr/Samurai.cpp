@@ -12,12 +12,13 @@ void ASamurai::BeginPlay()
 void ASamurai::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (attackType == ATTACK_TYPE::SPECIAL && State != STATE::STUNNED && State != STATE::IDLE) SetActorLocation(GetActorLocation() + GetActorForwardVector() * (Attacks[static_cast<uint8>(attackType)].AttackTotalFrameCount - currentFrameOfAttack) * specialAttackSpeedMultiplier);
+	if (attackType == ATTACK_TYPE::SPECIAL && State != STATE::STUNNED && State != STATE::IDLE) 
+		if (GetActorLocation().Size() < maxDistanceFromCenter - Attacks[static_cast<uint8>(attackType)].AttackTotalFrameCount - currentFrameOfAttack) 
+			SetActorLocation(GetActorLocation() + GetActorForwardVector() * (Attacks[static_cast<uint8>(attackType)].AttackTotalFrameCount - currentFrameOfAttack) * specialAttackSpeedMultiplier);
 }
 
 void ASamurai::PressedSpecial()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Samurai used SPECIAL!"))
 	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING &&  specialMeter >= Attacks[static_cast<uint8>(ATTACK_TYPE::SPECIAL)].staminaCost && State != STATE::STEPPING)
 	{
 		State = STATE::ATTACKING;

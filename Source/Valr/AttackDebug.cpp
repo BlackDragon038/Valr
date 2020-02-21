@@ -32,15 +32,15 @@ void UAttackDebug::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 
 	if (Fighter->State == STATE::ATTACKING)
 	{
-		FVector startMinAngle = Fighter->GetActorLocation();
-		FVector endMinAngle = Fighter->GetActorLocation();
-		startMinAngle.X = std::cos(FMath::DegreesToRadians(Fighter->Attacks[static_cast<uint8>(Fighter->attackType)].Parts[Fighter->currentPartsIndex].minAngle) * Fighter->Attacks[static_cast<uint8>(Fighter->attackType)].Parts[Fighter->currentPartsIndex].minDist);
-		endMinAngle.Y = std::sin(FMath::DegreesToRadians(Fighter->Attacks[static_cast<uint8>(Fighter->attackType)].Parts[Fighter->currentPartsIndex].minAngle) * Fighter->Attacks[static_cast<uint8>(Fighter->attackType)].Parts[Fighter->currentPartsIndex].maxDist);
+		FVector startMinAngle = Fighter->GetActorLocation() + Fighter->GetActorRightVector();
+		FVector endMinAngle = Fighter->GetActorLocation() + Fighter->GetActorRightVector();
+		startMinAngle.X = std::cos(FMath::DegreesToRadians(Fighter->Attacks[static_cast<uint8>(Fighter->attackType)].Parts[Fighter->currentPartsIndex].minAngle)) * Fighter->Attacks[static_cast<uint8>(Fighter->attackType)].Parts[Fighter->currentPartsIndex].minDist;
+		endMinAngle.Y = std::sin(FMath::DegreesToRadians(Fighter->Attacks[static_cast<uint8>(Fighter->attackType)].Parts[Fighter->currentPartsIndex].minAngle)) * Fighter->Attacks[static_cast<uint8>(Fighter->attackType)].Parts[Fighter->currentPartsIndex].maxDist;
 		
-		FVector startMaxAngle = Fighter->GetActorLocation();
-		FVector endMaxAngle = Fighter->GetActorLocation();
-		startMaxAngle.X = std::cos(FMath::DegreesToRadians(Fighter->Attacks[static_cast<uint8>(Fighter->attackType)].Parts[Fighter->currentPartsIndex].maxAngle) * Fighter->Attacks[static_cast<uint8>(Fighter->attackType)].Parts[Fighter->currentPartsIndex].minDist);
-		endMaxAngle.Y = std::sin(FMath::DegreesToRadians(Fighter->Attacks[static_cast<uint8>(Fighter->attackType)].Parts[Fighter->currentPartsIndex].maxAngle) * Fighter->Attacks[static_cast<uint8>(Fighter->attackType)].Parts[Fighter->currentPartsIndex].maxDist);
+		FVector startMaxAngle = Fighter->GetActorLocation() + Fighter->GetActorRightVector();
+		FVector endMaxAngle = Fighter->GetActorLocation() + Fighter->GetActorRightVector();
+		startMaxAngle.X = std::cos(FMath::DegreesToRadians(Fighter->Attacks[static_cast<uint8>(Fighter->attackType)].Parts[Fighter->currentPartsIndex].maxAngle)) * Fighter->Attacks[static_cast<uint8>(Fighter->attackType)].Parts[Fighter->currentPartsIndex].minDist;
+		endMaxAngle.Y = std::sin(FMath::DegreesToRadians(Fighter->Attacks[static_cast<uint8>(Fighter->attackType)].Parts[Fighter->currentPartsIndex].maxAngle)) * Fighter->Attacks[static_cast<uint8>(Fighter->attackType)].Parts[Fighter->currentPartsIndex].maxDist;
 
 		DrawDebugLine
 		(

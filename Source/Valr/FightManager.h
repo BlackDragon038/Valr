@@ -11,7 +11,7 @@
 #include "FightManager.generated.h"
 
 UENUM(BlueprintType)
-enum class ROUND_STATE : uint8 { ROUND_OVER_PLAYER1_WINS, ROUND_OVER_PLAYER2_WINS, ROUND_DRAW, ROUND_RESTARTING, ROUND_ABOUT_TO_START, ROUND_ONGOING };
+enum class ROUND_STATE : uint8 { ROUND_OVER_PLAYER1_WINS, ROUND_OVER_PLAYER2_WINS, ROUND_DRAW, ROUND_RESTARTING, ROUND_ABOUT_TO_START, ROUND_ONGOING, MATCH_OVER_PLAYER1_WINS, MATCH_OVER_PLAYER2_WINS };
 
 UCLASS()
 class VALR_API AFightManager : public APawn
@@ -39,12 +39,6 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 		uint8 roundCount = 1;
-
-	UPROPERTY(BlueprintReadOnly)
-		uint8 Player1Score = 0;
-
-	UPROPERTY(BlueprintReadOnly)
-		uint8 Player2Score = 0;
 
 	UPROPERTY(BlueprintReadOnly)
 		ROUND_STATE roundState;
