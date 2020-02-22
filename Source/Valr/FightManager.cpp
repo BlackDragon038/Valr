@@ -143,6 +143,8 @@ void AFightManager::testRoundStatus()
 			roundCount++;
 			Player2->Lives--;
 			Player2->State = STATE::KNOCKED_DOWN;
+			Player1->bDisableInput = true;
+			Player2->bDisableInput = true;
 			timeToStart = 300;
 		}
 		else if (Player2->Health > Player1->Health)
@@ -150,6 +152,8 @@ void AFightManager::testRoundStatus()
 			roundCount++;
 			Player1->Lives--;
 			Player1->State = STATE::KNOCKED_DOWN;
+			Player1->bDisableInput = true;
+			Player2->bDisableInput = true;
 			timeToStart = 300;
 		}
 		else if (Player1->Health == Player2->Health)
@@ -174,6 +178,8 @@ void AFightManager::testRoundStatus()
 			roundCount++;
 			Player1->Lives--;
 			Player1->State = STATE::KNOCKED_DOWN;
+			Player1->bDisableInput = true;
+			Player2->bDisableInput = true;
 			timeToStart = 300;
 		}
 	}
@@ -184,6 +190,8 @@ void AFightManager::testRoundStatus()
 			roundCount++;
 			Player2->Lives--;
 			Player2->State = STATE::KNOCKED_DOWN;
+			Player1->bDisableInput = true;
+			Player2->bDisableInput = true;
 			timeToStart = 300;
 		}
 	}
@@ -214,36 +222,73 @@ void AFightManager::calculateTimers(FVector toP1, FVector toP2)
 		if (Player1->State == STATE::KNOCKED_DOWN)
 		{
 			roundState = ROUND_STATE::ROUND_OVER_PLAYER2_WINS;
-			Player1->bDisableInput = true;
-			Player2->bDisableInput = true;
 		}
 		else if (Player2->State == STATE::KNOCKED_DOWN)
 		{
 			roundState = ROUND_STATE::ROUND_OVER_PLAYER1_WINS;
-			Player1->bDisableInput = true;
-			Player2->bDisableInput = true;
 		}
 		timeToStart--;
-		return;
 	}
-	else if (timeToStart >= (60))
+	else if (timeToStart >= 60)
 	{
 		FVector MiddleVector = (Player1->GetActorLocation() + Player2->GetActorLocation()) / 2;
-		if (Player1->State == STATE::KNOCKED_DOWN)
+		if (Player1->State == STATE::KNOCKED_DOWN || Player1->State == STATE::GETTING_UP)
 		{
-			Player1->State = STATE::GETTING_UP;
-			Player1->Reset();
-			Player2->Reset();
-			if (Player1->GetActorLocation().Size() > Player1->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2) || Player2->GetActorLocation().Size() > Player2->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2))
+			if (Player1->State == STATE::KNOCKED_DOWN)
+			{
+				Player1->State = STATE::GETTING_UP;
+				Player1->Reset();
+				Player2->Reset();
+			}
+			if (Player1->GetActorLocation().Size() > Player1->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2) || Player2->GetActorLocation().Size() > Player2->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2) ||
+				(Player1->GetActorLocation() - Player2->GetActorLocation()).Size() > defaultDistanceBetweenPlayers + Player2->MovementSpeed)
+			{
 				Camera->SpringArm->TargetArmLength = Camera->initialCameraDistance;
+				Player1->SetActorLocation(FVector(-(defaultDistanceBetweenPlayers / 2), 0, 0));
+				Player2->SetActorLocation(FVector((defaultDistanceBetweenPlayers / 2), 0, 0));
+				Player1->SetActorRotation(Player2->GetActorLocation().Rotation());
+				Player2->SetActorRotation(Player1->GetActorLocation().Rotation());	
+			}
+			else
+			{
+				Player1->SetActorRotation(FMath::Lerp(Player1->GetActorRotation(), toP2.Rotation(), 0.05f));
+				if ((Player2->GetActorLocation() - Player1->GetActorLocation()).Size() < defaultDistanceBetweenPlayers)
+					Player2->WalkBackToPosition(FVector(MiddleVector.X + toP2.X * (defaultDistanceBetweenPlayers / 2), MiddleVector.Y + toP2.Y * (defaultDistanceBetweenPlayers / 2), MiddleVector.Z));
+				else
+				{
+					Player2->LEFT_Key = false;
+					Player2->State = STATE::IDLE;
+				}
+			}
 		}
-		else if (Player2->State == STATE::KNOCKED_DOWN)
+		else if (Player2->State == STATE::KNOCKED_DOWN || Player2->State == STATE::GETTING_UP)
 		{
-			Player2->State = STATE::GETTING_UP;
-			Player2->Reset();
-			Player1->Reset();
-			if (Player1->GetActorLocation().Size() > Player1->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2) || Player2->GetActorLocation().Size() > Player2->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2))
+			if (Player2->State == STATE::KNOCKED_DOWN)
+			{
+				Player2->State = STATE::GETTING_UP;
+				Player2->Reset();
+				Player1->Reset();
+			}
+			if (Player1->GetActorLocation().Size() > Player1->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2) || Player2->GetActorLocation().Size() > Player2->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2) ||
+				(Player1->GetActorLocation() - Player2->GetActorLocation()).Size() > defaultDistanceBetweenPlayers + Player1->MovementSpeed)
+			{
 				Camera->SpringArm->TargetArmLength = Camera->initialCameraDistance;
+				Player1->SetActorLocation(FVector(-(defaultDistanceBetweenPlayers / 2), 0, 0));
+				Player2->SetActorLocation(FVector((defaultDistanceBetweenPlayers / 2), 0, 0));
+				Player1->SetActorRotation(Player2->GetActorLocation().Rotation());
+				Player2->SetActorRotation(Player1->GetActorLocation().Rotation());
+			}
+			else
+			{
+				Player2->SetActorRotation(FMath::Lerp(Player2->GetActorRotation(), toP1.Rotation(), 0.05f));
+				if ((Player2->GetActorLocation() - Player1->GetActorLocation()).Size() < defaultDistanceBetweenPlayers)
+					Player1->WalkBackToPosition(FVector(MiddleVector.X + toP1.X * (defaultDistanceBetweenPlayers / 2), MiddleVector.Y + toP1.Y * (defaultDistanceBetweenPlayers / 2), MiddleVector.Z));
+				else
+				{
+					Player1->LEFT_Key = false;
+					Player1->State = STATE::IDLE;
+				}
+			}
 		}
 		else if (roundState == ROUND_STATE::ROUND_DRAW)
 		{
@@ -258,7 +303,7 @@ void AFightManager::calculateTimers(FVector toP1, FVector toP2)
 				Player2->SetActorRotation(Player1->GetActorLocation().Rotation());
 			}
 		}
-		if (Player1->GetActorLocation().Size() < Player1->maxDistanceFromCenter - defaultDistanceBetweenPlayers/2 && Player2->GetActorLocation().Size() < Player2->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2))
+		/*if (Player1->GetActorLocation().Size() < Player1->maxDistanceFromCenter - defaultDistanceBetweenPlayers/2 && Player2->GetActorLocation().Size() < Player2->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2))
 		{
 			if (Player1->State == STATE::GETTING_UP)
 			{
@@ -282,14 +327,8 @@ void AFightManager::calculateTimers(FVector toP1, FVector toP2)
 					Player1->State = STATE::IDLE;
 				}
 			}
-		}
-		else
-		{
-			Player1->SetActorLocation(FVector(-(defaultDistanceBetweenPlayers / 2), 0, 0));
-			Player2->SetActorLocation(FVector((defaultDistanceBetweenPlayers / 2), 0, 0));
-			Player1->SetActorRotation(toP2.Rotation());
-			Player2->SetActorRotation(toP1.Rotation());
-		}
+			UE_LOG(LogTemp, Warning, TEXT("Outside dead zone && inside default distance"))
+		}*/
 
 		Camera->SetActorLocation(FVector(MiddleVector.X, MiddleVector.Y, MiddleVector.Z + Camera->Height));
 		Camera->SpringArm->TargetArmLength = FMath::Lerp(Camera->SpringArm->TargetArmLength, defaultDistanceBetweenPlayers * Camera->closestDistance, 0.06f);
