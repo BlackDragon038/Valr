@@ -39,13 +39,13 @@ void AFighterPawn::BeginPlay()
 	inputBufferIndex = 0;
 	inputBuffer.reserve(inputBufferSize);
 	Name = "Base Fighter";
+	Instance = Cast<UFightingGameInstance>(GetGameInstance());
 }
 
 void AFighterPawn::Reset()
 {
 	Health = 255;
 	Stamina = 255;
-	specialMeter = 0;
 	InputID = INPUT::IDLE;
 	UP_Key = false;
 	DOWN_Key = false;
@@ -122,7 +122,7 @@ void AFighterPawn::testSideStep()
 		{
 			State = STATE::STEPPING;
 			steppingSpeed -= 1;
-			if (GetActorLocation().Size() < maxDistanceFromCenter - ((float)steppingSpeed * sideStepSpeed / 100.f)) 
+			if (GetActorLocation().Size() < Instance->maxDistanceFromCenter - ((float)steppingSpeed * sideStepSpeed / 100.f))
 				SetActorLocation(GetActorLocation() + GetActorRightVector() * -((float)steppingSpeed * sideStepSpeed / 100.f));
 		}
 		else
@@ -139,7 +139,7 @@ void AFighterPawn::testSideStep()
 		{
 			State = STATE::STEPPING;
 			steppingSpeed -= 1;
-			if (GetActorLocation().Size() < maxDistanceFromCenter - ((float)steppingSpeed * sideStepSpeed / 100.f))
+			if (GetActorLocation().Size() < Instance->maxDistanceFromCenter - ((float)steppingSpeed * sideStepSpeed / 100.f))
 			SetActorLocation(GetActorLocation() + GetActorForwardVector() * -((float)steppingSpeed * sideStepSpeed / 100.f));
 		}
 		else
@@ -156,7 +156,7 @@ void AFighterPawn::testSideStep()
 		{
 			State = STATE::STEPPING;
 			steppingSpeed -= 1;
-			if (GetActorLocation().Size() < maxDistanceFromCenter - ((float)steppingSpeed * sideStepSpeed / 100.f))
+			if (GetActorLocation().Size() < Instance->maxDistanceFromCenter - ((float)steppingSpeed * sideStepSpeed / 100.f))
 			SetActorLocation(GetActorLocation() + GetActorRightVector() * ((float)steppingSpeed * sideStepSpeed / 100.f));
 		}
 		else
@@ -173,7 +173,7 @@ void AFighterPawn::testSideStep()
 		{
 			State = STATE::STEPPING;
 			steppingSpeed -= 1;
-			if (GetActorLocation().Size() < maxDistanceFromCenter - ((float)steppingSpeed * sideStepSpeed / 100.f))
+			if (GetActorLocation().Size() < Instance->maxDistanceFromCenter - ((float)steppingSpeed * sideStepSpeed / 100.f))
 			SetActorLocation(GetActorLocation() + GetActorForwardVector() * ((float)steppingSpeed * sideStepSpeed / 100.f));
 		}
 		else
@@ -232,8 +232,13 @@ void AFighterPawn::Tick(float DeltaTime)
 		InputID = INPUT::IDLE;
 	}
 
-	if (State != STATE::ATTACKING && State != STATE::BLOCKING && Stamina < 255-staminaRegeneration && State != STATE::STEPPING)
-		Stamina += staminaRegeneration;
+	if (State != STATE::ATTACKING && State != STATE::BLOCKING && State != STATE::STEPPING)
+	{
+		if (Stamina < 255 - staminaRegeneration)
+			Stamina += staminaRegeneration;
+		else
+			Stamina = 255;
+	}
 
 	testSideStep();
 }
@@ -255,7 +260,7 @@ void AFighterPawn::AxisW(float Axis)
 {
 	if (State != STATE::ATTACKING && State != STATE::BLOCKING && State != STATE::STUNNED && Stamina > 10 && State != STATE::STEPPING && !bDisableInput)
 	{
-		if (GetActorLocation().Size() < maxDistanceFromCenter - MovementSpeed)
+		if (GetActorLocation().Size() < Instance->maxDistanceFromCenter - MovementSpeed)
 		{
 			UP_Key = static_cast<bool>(Axis);
 
@@ -295,7 +300,7 @@ void AFighterPawn::AxisA(float Axis)
 {
 	if (State != STATE::ATTACKING && State != STATE::BLOCKING && State != STATE::STUNNED && Stamina > 10 && State != STATE::STEPPING && Stamina > 25 && !bDisableInput)
 	{
-		if (GetActorLocation().Size() < maxDistanceFromCenter - MovementSpeed)
+		if (GetActorLocation().Size() < Instance->maxDistanceFromCenter - MovementSpeed)
 		{
 			LEFT_Key = static_cast<bool>(Axis);
 
@@ -335,7 +340,7 @@ void AFighterPawn::AxisS(float Axis)
 {
 	if (State != STATE::ATTACKING && State != STATE::BLOCKING && State != STATE::STUNNED && Stamina > 10 && State != STATE::STEPPING && !bDisableInput)
 	{
-		if (GetActorLocation().Size() < maxDistanceFromCenter - MovementSpeed)
+		if (GetActorLocation().Size() < Instance->maxDistanceFromCenter - MovementSpeed)
 		{
 			DOWN_Key = static_cast<bool>(Axis);
 
@@ -375,7 +380,7 @@ void AFighterPawn::AxisD(float Axis)
 {
 	if (State != STATE::ATTACKING && State != STATE::BLOCKING && State != STATE::STUNNED && Stamina > 10 && State != STATE::STEPPING && !bDisableInput)
 	{
-		if (GetActorLocation().Size() < maxDistanceFromCenter - MovementSpeed)
+		if (GetActorLocation().Size() < Instance->maxDistanceFromCenter - MovementSpeed)
 		{
 			RIGHT_Key = static_cast<bool>(Axis);
 

@@ -22,6 +22,9 @@ public:
 	// Sets default values for this pawn's properties
 	AFightManager();
 
+	UPROPERTY(BlueprintReadWrite)
+		UFightingGameInstance* Instance;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		AFighterPawn* Player1 = nullptr;
 

@@ -2,6 +2,7 @@
 
 
 #include "Viking.h"
+#include "Kismet/GameplayStatics.h"
 
 void AViking::BeginPlay()
 {
@@ -16,7 +17,9 @@ void AViking::Tick(float DeltaTime)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("VIKING ENRAGED!"))
 		if (specialMeter >= specialDrainSpeed)
+		{
 			specialMeter -= specialDrainSpeed;
+		}
 		else
 		{
 			bNonStunnable = false;
@@ -26,7 +29,7 @@ void AViking::Tick(float DeltaTime)
 
 void AViking::PressedSpecial()
 {
-	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING &&  specialMeter >= Attacks[static_cast<uint8>(ATTACK_TYPE::SPECIAL)].staminaCost && State != STATE::STEPPING)
+	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING &&  specialMeter >= Attacks[static_cast<uint8>(ATTACK_TYPE::SPECIAL)].staminaCost && State != STATE::STEPPING && !bNonStunnable)
 	{
 		State = STATE::ATTACKING;
 		InputID = INPUT::SPECIAL;

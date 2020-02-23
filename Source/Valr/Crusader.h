@@ -15,9 +15,6 @@ class VALR_API ACrusader : public AFighterPawn
 public:
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UNiagaraSystem* specialAttackParticle;
-
 	void BeginPlay();
 	
 	void Tick(float DeltaTime);

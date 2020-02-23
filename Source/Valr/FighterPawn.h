@@ -4,8 +4,7 @@
 
 #include "Runtime/Engine/Classes/Components/SkeletalMeshComponent.h"
 #include "Runtime/Engine/Classes/Engine/StaticMeshActor.h"
-#include "NiagaraFunctionLibrary.h"
-#include "NiagaraSystem.h"
+#include "FightingGameInstance.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
@@ -93,6 +92,8 @@ public:
 	// Sets default values for this pawn's properties
 	AFighterPawn();
 
+	UFightingGameInstance* Instance;
+
 	UPROPERTY(BlueprintReadOnly)
 		FString Name;
 
@@ -121,8 +122,6 @@ public:
 		uint8 sideStepFrameTime = 20;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 		uint8 turnSpeed = 30;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-		float maxDistanceFromCenter = 1000.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Base Stats")
 		uint8 Stamina = 100;
 	UPROPERTY(BlueprintReadOnly)

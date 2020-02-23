@@ -30,7 +30,8 @@ void AFightManager::BeginPlay()
 	GetWorld()->GetFirstPlayerController()->SetViewTarget(Camera);
 	AddTickPrerequisiteActor(Player1);
 	AddTickPrerequisiteActor(Player2);
-	roundState = ROUND_STATE::ROUND_RESTARTING;
+	roundState = ROUND_STATE::ROUND_RESTARTING;	
+	Instance = Cast<UFightingGameInstance>(GetGameInstance());
 }
 
 void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector toP1, FVector toP2)
@@ -74,10 +75,11 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 			{
 				uint8 specialCharge = P1->Attacks[static_cast<uint8>(P1->attackType)].Damage* P2->specialChargeMultiplier;
 				if (P2->specialMeter <= 255-specialCharge) P2->specialMeter += specialCharge;
+				else P2->specialMeter = 255;
 				P1->State = STATE::STUNNED;
 				P1->currentFrameOfAttack = P2->BlockData.blockStunRate;
 				P1->stunPush = P2->BlockData.blockPushPower;
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), P1->hitParticle, { FRotator(),FVector(P1->GetActorLocation() + FVector(0, 0, 120) + toP2 * 20),FVector(0.25,0.25,0.25) });
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), P1->hitParticle, { FRotator(),FVector(P2->GetActorLocation() + FVector(0, 0, 120) + toP1 * (PlayerDistance/2)),FVector(0.25,0.25,0.25) });
 			}
 			else
 			{
@@ -85,16 +87,18 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 				{
 					if (P2->Health >= P1->Attacks[static_cast<uint8>(P1->attackType)].Damage) P2->Health -= P1->Attacks[static_cast<uint8>(P1->attackType)].Damage;
 					else P2->Health = 0;
+
 					if (!P2->bNonStunnable)
 					{
 						P2->State = STATE::STUNNED;
 						P2->currentFrameOfAttack = P1->Attacks[static_cast<uint8>(P1->attackType)].StunRate;
 						P2->stunPush = P1->Attacks[static_cast<uint8>(P1->attackType)].StunPushPower;
 					}
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), P2->hitParticle, { FRotator(),FVector(P2->GetActorLocation() + FVector(0, 0, 120) + toP1 * 20),FVector(0.25,0.25,0.25) });
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), P2->hitParticle, { FRotator(),FVector(P2->GetActorLocation() + FVector(0, 0, 120) + toP1 * (PlayerDistance * 0.25)),FVector(0.25,0.25,0.25) });
 					P1->bOpponentIsHit = true;
 					uint8 specialCharge = P1->Attacks[static_cast<uint8>(P1->attackType)].Damage* P2->specialChargeMultiplier;
 					if (P2->specialMeter <= 255-specialCharge) P2->specialMeter += specialCharge;
+					else P2->specialMeter = 255;
 				}
 				P1->currentFrameOfAttack++;
 				if (PlayerDistance > 50) 
@@ -120,7 +124,7 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 		if (P1->currentFrameOfAttack > 0)
 		{
 			P1->currentFrameOfAttack--;
-			if (P1->GetActorLocation().Size() < P1->maxDistanceFromCenter - (P1->currentFrameOfAttack * ((float)P1->stunPush / 100.f)))
+			if (P1->GetActorLocation().Size() < Instance->maxDistanceFromCenter - (P1->currentFrameOfAttack * ((float)P1->stunPush / 100.f)))
 			P1->SetActorLocation(P1->GetActorLocation() + (toP1 * (P1->currentFrameOfAttack * ((float)P1->stunPush / 100.f))));
 		}
 		else
@@ -240,7 +244,7 @@ void AFightManager::calculateTimers(FVector toP1, FVector toP2)
 				Player1->Reset();
 				Player2->Reset();
 			}
-			if (Player1->GetActorLocation().Size() > Player1->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2) || Player2->GetActorLocation().Size() > Player2->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2) ||
+			if (Player1->GetActorLocation().Size() > Instance->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2) || Player2->GetActorLocation().Size() > Instance->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2) ||
 				(Player1->GetActorLocation() - Player2->GetActorLocation()).Size() > defaultDistanceBetweenPlayers + Player2->MovementSpeed)
 			{
 				Camera->SpringArm->TargetArmLength = Camera->initialCameraDistance;
@@ -269,7 +273,7 @@ void AFightManager::calculateTimers(FVector toP1, FVector toP2)
 				Player2->Reset();
 				Player1->Reset();
 			}
-			if (Player1->GetActorLocation().Size() > Player1->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2) || Player2->GetActorLocation().Size() > Player2->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2) ||
+			if (Player1->GetActorLocation().Size() > Instance->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2) || Player2->GetActorLocation().Size() > Instance->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2) ||
 				(Player1->GetActorLocation() - Player2->GetActorLocation()).Size() > defaultDistanceBetweenPlayers + Player1->MovementSpeed)
 			{
 				Camera->SpringArm->TargetArmLength = Camera->initialCameraDistance;
@@ -303,33 +307,6 @@ void AFightManager::calculateTimers(FVector toP1, FVector toP2)
 				Player2->SetActorRotation(Player1->GetActorLocation().Rotation());
 			}
 		}
-		/*if (Player1->GetActorLocation().Size() < Player1->maxDistanceFromCenter - defaultDistanceBetweenPlayers/2 && Player2->GetActorLocation().Size() < Player2->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2))
-		{
-			if (Player1->State == STATE::GETTING_UP)
-			{
-				Player1->SetActorRotation(FMath::Lerp(Player1->GetActorRotation(), toP2.Rotation(), 0.05f));
-				if ((Player2->GetActorLocation() - Player1->GetActorLocation()).Size() < defaultDistanceBetweenPlayers)
-					Player2->WalkBackToPosition(FVector(MiddleVector.X + toP2.X * (defaultDistanceBetweenPlayers / 2), MiddleVector.Y + toP2.Y * (defaultDistanceBetweenPlayers / 2), MiddleVector.Z));
-				else
-				{
-					Player2->LEFT_Key = false;
-					Player2->State = STATE::IDLE;
-				}
-			}
-			else if (Player2->State == STATE::GETTING_UP)
-			{
-				Player2->SetActorRotation(FMath::Lerp(Player2->GetActorRotation(), toP1.Rotation(), 0.05f));
-				if ((Player2->GetActorLocation() - Player1->GetActorLocation()).Size() < defaultDistanceBetweenPlayers)
-					Player1->WalkBackToPosition(FVector(MiddleVector.X + toP1.X * (defaultDistanceBetweenPlayers / 2), MiddleVector.Y + toP1.Y * (defaultDistanceBetweenPlayers / 2), MiddleVector.Z));
-				else
-				{
-					Player1->LEFT_Key = false;
-					Player1->State = STATE::IDLE;
-				}
-			}
-			UE_LOG(LogTemp, Warning, TEXT("Outside dead zone && inside default distance"))
-		}*/
-
 		Camera->SetActorLocation(FVector(MiddleVector.X, MiddleVector.Y, MiddleVector.Z + Camera->Height));
 		Camera->SpringArm->TargetArmLength = FMath::Lerp(Camera->SpringArm->TargetArmLength, defaultDistanceBetweenPlayers * Camera->closestDistance, 0.06f);
 		FVector PerpendicularVector = { MiddleVector.Y,-MiddleVector.X,MiddleVector.Z };
@@ -371,7 +348,6 @@ float AFightManager::Angle(FVector a, FVector b)
 void AFightManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 	FVector toPlayer1 = Player1->GetActorLocation() - Player2->GetActorLocation();
 	FVector toPlayer2 = Player2->GetActorLocation() - Player1->GetActorLocation();
 	toPlayer1.Normalize();
