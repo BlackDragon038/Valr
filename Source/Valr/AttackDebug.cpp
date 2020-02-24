@@ -3,6 +3,7 @@
 
 #include "AttackDebug.h"
 #include "DrawDebugHelpers.h"
+#include <cmath>
 
 // Sets default values for this component's properties
 UAttackDebug::UAttackDebug()

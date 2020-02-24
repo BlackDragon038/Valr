@@ -522,7 +522,7 @@ void AFighterPawn::ReleasedD()
 
 void AFighterPawn::PressedLight() 
 {
-	if (State == STATE::ATTACKING && bCanCombo && Stamina >= Attacks[static_cast<uint8>(ATTACK_TYPE::LIGHT)].staminaCost && !bDisableInput)
+	if (State == STATE::ATTACKING && bCanCombo && attackType != ATTACK_TYPE::LIGHT && Stamina >= Attacks[static_cast<uint8>(ATTACK_TYPE::LIGHT)].staminaCost && !bDisableInput)
 	{
 		if (currentFrameOfAttack >= Attacks[static_cast<uint8>(attackType)].AttackTotalFrameCount / 2)
 		{
@@ -549,7 +549,7 @@ void AFighterPawn::PressedLight()
 
 void AFighterPawn::PressedMedium() 
 {
-	if (State == STATE::ATTACKING && bCanCombo && Stamina >= Attacks[static_cast<uint8>(ATTACK_TYPE::MEDIUM)].staminaCost && !bDisableInput)
+	if (State == STATE::ATTACKING && bCanCombo && attackType != ATTACK_TYPE::MEDIUM &&  Stamina >= Attacks[static_cast<uint8>(ATTACK_TYPE::MEDIUM)].staminaCost && !bDisableInput)
 	{
 		if (currentFrameOfAttack >= Attacks[static_cast<uint8>(attackType)].AttackTotalFrameCount / 2)
 		{
@@ -576,7 +576,7 @@ void AFighterPawn::PressedMedium()
 
 void AFighterPawn::PressedHeavy() 
 {
-	if (State == STATE::ATTACKING && bCanCombo && Stamina >= Attacks[static_cast<uint8>(ATTACK_TYPE::HEAVY)].staminaCost && !bDisableInput)
+	if (State == STATE::ATTACKING && bCanCombo && attackType != ATTACK_TYPE::HEAVY && Stamina >= Attacks[static_cast<uint8>(ATTACK_TYPE::HEAVY)].staminaCost && !bDisableInput)
 	{
 		if (currentFrameOfAttack >= Attacks[static_cast<uint8>(attackType)].AttackTotalFrameCount / 2)
 		{

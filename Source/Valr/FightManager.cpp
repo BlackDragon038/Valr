@@ -28,10 +28,10 @@ void AFightManager::BeginPlay()
 		return;
 	}
 	GetWorld()->GetFirstPlayerController()->SetViewTarget(Camera);
-	AddTickPrerequisiteActor(Player1);
-	AddTickPrerequisiteActor(Player2);
 	roundState = ROUND_STATE::ROUND_RESTARTING;	
 	Instance = Cast<UFightingGameInstance>(GetGameInstance());
+	AddTickPrerequisiteActor(Player1);
+	AddTickPrerequisiteActor(Player2);
 }
 
 void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector toP1, FVector toP2)
@@ -360,7 +360,7 @@ void AFightManager::Tick(float DeltaTime)
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Orange, FString::Printf(TEXT("Player 2 CurrentPartsIndex: %i"), Player2->currentPartsIndex));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Blue, FString::Printf(TEXT("Player 2 AttackType: %i"), Player2->attackType));
 
-	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::White, FString::Printf(TEXT("FrameTime: %f----------------------FrameRate: %f"), DeltaTime, 1.f / DeltaTime));
+	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::White, FString::Printf(TEXT("FrameTime: %f----------------------FrameRate: %f"), DeltaTime, std::truncf(1.f / DeltaTime)));
 
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Green, FString::Printf(TEXT("Player 1 Angle: %f  -  Player 1 to Player 2 Distance: %f"), Angle(Player1->GetActorRightVector(), toPlayer2), (Player2->GetActorLocation() - Player1->GetActorLocation()).Size()));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Red, FString::Printf(TEXT("Player 1 State: %i"), Player1->State));
@@ -433,4 +433,3 @@ void AFightManager::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAxis("Player2_Block", Player2, &AFighterPawn::AxisBlock);
 
 }
-
