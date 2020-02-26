@@ -59,9 +59,10 @@ protected:
 
 	void calculateTimers(FVector toP1, FVector toP2);
 
+public:	
+
 	float Angle(FVector a, FVector b);
 
-public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

@@ -80,108 +80,111 @@ void AFighterPawn::AttackReset()
 
 void AFighterPawn::testSideStep()
 {
-	if (steppingFrameTime > 0)
+	if (State != STATE::STUNNED)
 	{
-		steppingFrameTime--;
-		if (KeyW == KEY_STATE::PRESSED_TWICE && !bDoubleTapW)
+		if (steppingFrameTime > 0)
 		{
-			steppingSpeed = sideStepFrameTime;
-			bDoubleTapW = true;
-			Stamina -= 100;
-		}
-		if (KeyA == KEY_STATE::PRESSED_TWICE && !bDoubleTapA)
-		{
-			steppingSpeed = sideStepFrameTime;
-			bDoubleTapA = true;
-			Stamina -= 100;
-		}
-		if (KeyS == KEY_STATE::PRESSED_TWICE && !bDoubleTapS)
-		{
-			steppingSpeed = sideStepFrameTime;
-			bDoubleTapS = true;
-			Stamina -= 100;
-		}
-		if (KeyD == KEY_STATE::PRESSED_TWICE && !bDoubleTapD)
-		{
-			steppingSpeed = sideStepFrameTime;
-			bDoubleTapD = true;
-			Stamina -= 100;
-		}
-	}
-	else
-	{
-		KeyW = KEY_STATE::RESET;
-		KeyA = KEY_STATE::RESET;
-		KeyS = KEY_STATE::RESET;
-		KeyD = KEY_STATE::RESET;
-	}
-
-	if (bDoubleTapW)
-	{
-		if (steppingSpeed > 0)
-		{
-			State = STATE::STEPPING;
-			steppingSpeed -= 1;
-			if (GetActorLocation().Size() < Instance->maxDistanceFromCenter - ((float)steppingSpeed * sideStepSpeed / 100.f))
-				SetActorLocation(GetActorLocation() + GetActorRightVector() * -((float)steppingSpeed * sideStepSpeed / 100.f));
+			steppingFrameTime--;
+			if (KeyW == KEY_STATE::PRESSED_TWICE && !bDoubleTapW)
+			{
+				steppingSpeed = sideStepFrameTime;
+				bDoubleTapW = true;
+				Stamina -= 100;
+			}
+			if (KeyA == KEY_STATE::PRESSED_TWICE && !bDoubleTapA)
+			{
+				steppingSpeed = sideStepFrameTime;
+				bDoubleTapA = true;
+				Stamina -= 100;
+			}
+			if (KeyS == KEY_STATE::PRESSED_TWICE && !bDoubleTapS)
+			{
+				steppingSpeed = sideStepFrameTime;
+				bDoubleTapS = true;
+				Stamina -= 100;
+			}
+			if (KeyD == KEY_STATE::PRESSED_TWICE && !bDoubleTapD)
+			{
+				steppingSpeed = sideStepFrameTime;
+				bDoubleTapD = true;
+				Stamina -= 100;
+			}
 		}
 		else
 		{
-			bDoubleTapW = false;
-			State = STATE::IDLE;
 			KeyW = KEY_STATE::RESET;
-			UP_Key = false;
-		}
-	}
-	else if (bDoubleTapA)
-	{
-		if (steppingSpeed > 0)
-		{
-			State = STATE::STEPPING;
-			steppingSpeed -= 1;
-			if (GetActorLocation().Size() < Instance->maxDistanceFromCenter - ((float)steppingSpeed * sideStepSpeed / 100.f))
-			SetActorLocation(GetActorLocation() + GetActorForwardVector() * -((float)steppingSpeed * sideStepSpeed / 100.f));
-		}
-		else
-		{
-			bDoubleTapA = false;
-			State = STATE::IDLE;
 			KeyA = KEY_STATE::RESET;
-			LEFT_Key = false;
-		}
-	}
-	else if (bDoubleTapS)
-	{
-		if (steppingSpeed > 0)
-		{
-			State = STATE::STEPPING;
-			steppingSpeed -= 1;
-			if (GetActorLocation().Size() < Instance->maxDistanceFromCenter - ((float)steppingSpeed * sideStepSpeed / 100.f))
-			SetActorLocation(GetActorLocation() + GetActorRightVector() * ((float)steppingSpeed * sideStepSpeed / 100.f));
-		}
-		else
-		{
-			bDoubleTapS = false;
-			State = STATE::IDLE;
 			KeyS = KEY_STATE::RESET;
-			DOWN_Key = false;
-		}
-	}
-	else if (bDoubleTapD)
-	{
-		if (steppingSpeed > 0)
-		{
-			State = STATE::STEPPING;
-			steppingSpeed -= 1;
-			if (GetActorLocation().Size() < Instance->maxDistanceFromCenter - ((float)steppingSpeed * sideStepSpeed / 100.f))
-			SetActorLocation(GetActorLocation() + GetActorForwardVector() * ((float)steppingSpeed * sideStepSpeed / 100.f));
-		}
-		else
-		{
-			bDoubleTapD = false;
-			State = STATE::IDLE;
 			KeyD = KEY_STATE::RESET;
-			RIGHT_Key = false;
+		}
+
+		if (bDoubleTapW)
+		{
+			if (steppingSpeed > 0)
+			{
+				State = STATE::STEPPING;
+				steppingSpeed -= 1;
+				if (GetActorLocation().Size() < Instance->maxDistanceFromCenter - ((float)steppingSpeed * sideStepSpeed / 100.f))
+					SetActorLocation(GetActorLocation() + GetActorRightVector() * -((float)steppingSpeed * sideStepSpeed / 100.f));
+			}
+			else
+			{
+				bDoubleTapW = false;
+				State = STATE::IDLE;
+				KeyW = KEY_STATE::RESET;
+				UP_Key = false;
+			}
+		}
+		else if (bDoubleTapA)
+		{
+			if (steppingSpeed > 0)
+			{
+				State = STATE::STEPPING;
+				steppingSpeed -= 1;
+				if (GetActorLocation().Size() < Instance->maxDistanceFromCenter - ((float)steppingSpeed * sideStepSpeed / 100.f))
+					SetActorLocation(GetActorLocation() + GetActorForwardVector() * -((float)steppingSpeed * sideStepSpeed / 100.f));
+			}
+			else
+			{
+				bDoubleTapA = false;
+				State = STATE::IDLE;
+				KeyA = KEY_STATE::RESET;
+				LEFT_Key = false;
+			}
+		}
+		else if (bDoubleTapS)
+		{
+			if (steppingSpeed > 0)
+			{
+				State = STATE::STEPPING;
+				steppingSpeed -= 1;
+				if (GetActorLocation().Size() < Instance->maxDistanceFromCenter - ((float)steppingSpeed * sideStepSpeed / 100.f))
+					SetActorLocation(GetActorLocation() + GetActorRightVector() * ((float)steppingSpeed * sideStepSpeed / 100.f));
+			}
+			else
+			{
+				bDoubleTapS = false;
+				State = STATE::IDLE;
+				KeyS = KEY_STATE::RESET;
+				DOWN_Key = false;
+			}
+		}
+		else if (bDoubleTapD)
+		{
+			if (steppingSpeed > 0)
+			{
+				State = STATE::STEPPING;
+				steppingSpeed -= 1;
+				if (GetActorLocation().Size() < Instance->maxDistanceFromCenter - ((float)steppingSpeed * sideStepSpeed / 100.f))
+					SetActorLocation(GetActorLocation() + GetActorForwardVector() * ((float)steppingSpeed * sideStepSpeed / 100.f));
+			}
+			else
+			{
+				bDoubleTapD = false;
+				State = STATE::IDLE;
+				KeyD = KEY_STATE::RESET;
+				RIGHT_Key = false;
+			}
 		}
 	}
 }

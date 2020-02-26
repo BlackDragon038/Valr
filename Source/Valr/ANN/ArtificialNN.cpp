@@ -55,7 +55,7 @@ TArray<double> ArtificialNN::CalcOutput(TArray<double> inputValues)
 
 	if (inputValues.Num() != numInputs)
 	{
-		//"ERROR: Number of Inputs must be " + numInputs);
+		UE_LOG(LogTemp,Warning, TEXT("ERROR: Number of Inputs must be %i "), numInputs);
 		return outputValues;
 	}
 
@@ -102,7 +102,7 @@ TArray<double> ArtificialNN::CalcOutput(TArray<double> inputValues, TArray<doubl
 
 	if (inputValues.Num() != numInputs)
 	{
-		//"ERROR: Number of Inputs must be " + numInputs);
+		UE_LOG(LogTemp, Warning, TEXT("ERROR: Number of Inputs must be %i "), numInputs);
 		return outputValues;
 	}
 

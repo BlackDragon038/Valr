@@ -101,16 +101,16 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 					else P2->specialMeter = 255;
 				}
 				P1->currentFrameOfAttack++;
-				if (PlayerDistance > 50) 
+				if (PlayerDistance > 50 && P1->GetActorLocation().Size() < Instance->maxDistanceFromCenter - ((P1->Attacks[static_cast<uint8>(P1->attackType)].AttackTotalFrameCount - P1->currentFrameOfAttack) * P1->Attacks[static_cast<uint8>(P1->attackType)].attackPush))
 					P1->SetActorLocation(P1->GetActorLocation() + (P1->GetActorForwardVector() * 
-					((P1->Attacks[static_cast<uint8>(P1->attackType)].AttackTotalFrameCount-P1->currentFrameOfAttack) * P1->Attacks[static_cast<uint8>(P1->attackType)].attackPush)));
+					((P1->Attacks[static_cast<uint8>(P1->attackType)].AttackTotalFrameCount - P1->currentFrameOfAttack) * P1->Attacks[static_cast<uint8>(P1->attackType)].attackPush)));
 			}
 		}
 		else
 		{
 			if (P1->currentFrameOfAttack > 0) P1->bResetAnimation = false;
 			P1->currentFrameOfAttack++;
-			if (PlayerDistance > 50)
+			if (PlayerDistance > 50 && P1->GetActorLocation().Size() < Instance->maxDistanceFromCenter - ((P1->Attacks[static_cast<uint8>(P1->attackType)].AttackTotalFrameCount - P1->currentFrameOfAttack) * P1->Attacks[static_cast<uint8>(P1->attackType)].attackPush))
 				P1->SetActorLocation(P1->GetActorLocation() + (P1->GetActorForwardVector() *
 				((P1->Attacks[static_cast<uint8>(P1->attackType)].AttackTotalFrameCount - P1->currentFrameOfAttack) * P1->Attacks[static_cast<uint8>(P1->attackType)].attackPush)));
 		}
