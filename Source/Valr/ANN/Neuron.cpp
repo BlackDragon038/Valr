@@ -14,5 +14,4 @@ Neuron::Neuron(int nInputs)
 
 Neuron::~Neuron()
 {
-
 }

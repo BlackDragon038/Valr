@@ -8,18 +8,18 @@ AAIBrain::AAIBrain()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-TArray<int> AAIBrain::SoftMax(TArray<int> values)
+TArray<double> AAIBrain::SoftMax(TArray<double> values)
 {
 	//double max = values.Max();
-	int max = FMath::Max<int>(values);
+	double max = FMath::Max<double>(values);
 
 	float scale = 0.0f;
 	for (int i = 0; i < values.Num(); ++i)
-		scale += FMath::Exp((int)(values[i] - max));
+		scale += FMath::Exp((float)(values[i] - max));
 
 	TArray<int> result;
 	for (int i = 0; i < values.Num(); ++i)
-		result.Add(FMath::Exp((int)(values[i] - max)) / scale);
+		result.Add(FMath::Exp((float)(values[i] - max)) / scale);
 
 	return result;
 }
@@ -56,8 +56,8 @@ void AAIBrain::Tick(float DeltaTime)
 	{
 		Timer += DeltaTime;
 
-		TArray<int> states;
-		TArray<int> qs;
+		TArray<double> states;
+		TArray<double> qs;
 
 		states.Add(Fighter->Health);
 		states.Add(Fighter->Stamina);
@@ -141,8 +141,8 @@ void AAIBrain::Tick(float DeltaTime)
 		{
 			for (int i = replayMemory.Num() - 1; i >= 0; i--)
 			{
-				TArray<int> t_outputsOld;
-				TArray<int> t_outputsNew;
+				TArray<double> t_outputsOld;
+				TArray<double> t_outputsNew;
 				t_outputsOld = SoftMax(Network->CalcOutput(replayMemory[i]->Variables));
 
 				double maxQOld = FMath::Max(t_outputsOld);

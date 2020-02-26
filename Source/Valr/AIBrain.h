@@ -12,10 +12,10 @@
 class Replay
 {
 public:
-	TArray<int> Variables;
+	TArray<double> Variables;
 	double Reward;
 
-	Replay(int y, int v, int x, int h, int s1, int s2, float r)
+	Replay(double y, double v, double x, double h, double s1, double s2, float r)
 	{
 		Variables.Add(y);
 		Variables.Add(v);
@@ -38,7 +38,7 @@ public:
 
 	double currentReward = 0.0f;						//reward to associate with actions
 	TArray<Replay*> replayMemory;					//memory - list of past actions and rewards
-	int maxCapacity = 1000000;						//memory capacity
+	int maxCapacity = 100;						//memory capacity
 
 	float Discount = 1.00f;						//how much future states affect rewards
 	float exploreRate = 500.0f;					//chance of picking random action

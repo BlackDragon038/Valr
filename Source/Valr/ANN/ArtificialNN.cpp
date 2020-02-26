@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ArtificialNN.h"
-#include <cmath>
+//#include <math.h>       /* round, floor, ceil, trunc */
 #include "Engine.h"
 
 ArtificialNN::ArtificialNN(int nIn, int nOut, int nHidden, int nPH, double a)
@@ -37,9 +37,9 @@ ArtificialNN::~ArtificialNN()
 	//}
 }
 
-TArray<int> ArtificialNN::Train(TArray<int> inputValues, TArray<int> desiredOutput)
+TArray<double> ArtificialNN::Train(TArray<double> inputValues, TArray<double> desiredOutput)
 {
-	TArray<int> outputValues = TArray<int>();
+	TArray<double> outputValues = TArray<double>();
 
 	outputValues = CalcOutput(inputValues, desiredOutput);
 	UpdateWeights(outputValues, desiredOutput);
@@ -47,16 +47,15 @@ TArray<int> ArtificialNN::Train(TArray<int> inputValues, TArray<int> desiredOutp
 	return outputValues;
 }
 
-
-TArray<int> ArtificialNN::CalcOutput(TArray<int> inputValues)
+TArray<double> ArtificialNN::CalcOutput(TArray<double> inputValues)
 {
-	TArray<int> inputs;
-	TArray<int> outputValues;
+	TArray<double> inputs;
+	TArray<double> outputValues;
 	int currentInput = 0;
 
 	if (inputValues.Num() != numInputs)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ERROR: Number of Inputs must be %i"), numInputs);
+		//"ERROR: Number of Inputs must be " + numInputs);
 		return outputValues;
 	}
 
@@ -95,15 +94,15 @@ TArray<int> ArtificialNN::CalcOutput(TArray<int> inputValues)
 	return outputValues;
 }
 
-TArray<int> ArtificialNN::CalcOutput(TArray<int> inputValues, TArray<int> desiredOutput)
+TArray<double> ArtificialNN::CalcOutput(TArray<double> inputValues, TArray<double> desiredOutput)
 {
-	TArray<int> inputs; // = new TArray<double>();
-	TArray<int> outputValues; // = new TArray<double>();
+	TArray<double> inputs; // = new TArray<double>();
+	TArray<double> outputValues; // = new TArray<double>();
 	int currentInput = 0;
 
 	if (inputValues.Num() != numInputs)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ERROR: Number of Inputs must be %i"), numInputs);
+		//"ERROR: Number of Inputs must be " + numInputs);
 		return outputValues;
 	}
 
@@ -159,7 +158,7 @@ FString ArtificialNN::PrintWeights()
 	return weightStr;
 }
 
-void ArtificialNN::UpdateWeights(TArray<int> outputs, TArray<int> desiredOutput)
+void ArtificialNN::UpdateWeights(TArray<double> outputs, TArray<double> desiredOutput)
 {
 	double error;
 	for (int i = numHidden; i >= 0; i--)	//start from end : backpropagations
