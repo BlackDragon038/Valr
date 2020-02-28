@@ -30,8 +30,8 @@ void AFightManager::BeginPlay()
 	GetWorld()->GetFirstPlayerController()->SetViewTarget(Camera);
 	roundState = ROUND_STATE::ROUND_RESTARTING;	
 	Instance = Cast<UFightingGameInstance>(GetGameInstance());
-	AddTickPrerequisiteActor(Player1);
-	AddTickPrerequisiteActor(Player2);
+	//AddTickPrerequisiteActor(Player1);
+	//AddTickPrerequisiteActor(Player2);
 }
 
 void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector toP1, FVector toP2)
@@ -47,22 +47,30 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 	}
 	else if (P1->State == STATE::ATTACKING)
 	{
-		if (P1->currentFrameOfAttack >= P1->Attacks[static_cast<uint8>(P1->attackType)].Parts[P1->currentPartsIndex].PSum)
+		if (static_cast<uint8>(P1->attackType) < P1->Attacks.Num() - 1)
 		{
 			if (P1->currentPartsIndex < P1->Attacks[static_cast<uint8>(P1->attackType)].Parts.Num() - 1)
-				P1->currentPartsIndex++;
-			else
 			{
-				P1->State = STATE::IDLE;
-				P1->InputID = INPUT::IDLE;
-				P1->currentFrameOfAttack = 0;
-				P1->currentPartsIndex = 0;
-				P1->attackType = ATTACK_TYPE::NONE;
-				P1->bOpponentIsHit = false;
-				P1->bCanCombo = true;
-				return;
+				if (P1->currentFrameOfAttack >= P1->Attacks[static_cast<uint8>(P1->attackType)].Parts[P1->currentPartsIndex].PSum)
+				{
+					if (P1->currentPartsIndex < P1->Attacks[static_cast<uint8>(P1->attackType)].Parts.Num() - 1)
+						P1->currentPartsIndex++;
+					else
+					{
+						P1->State = STATE::IDLE;
+						P1->InputID = INPUT::IDLE;
+						P1->currentFrameOfAttack = 0;
+						P1->currentPartsIndex = 0;
+						P1->attackType = ATTACK_TYPE::NONE;
+						P1->bOpponentIsHit = false;
+						P1->bCanCombo = true;
+						return;
+					}
+				}
 			}
-		}
+			else { UE_LOG(LogTemp, Fatal, TEXT("FightManager: currentPartsIndex index variable is greater than Attacks.Parts array! Exiting...")) return; }
+		} else { UE_LOG(LogTemp, Fatal, TEXT("FightManager: attackType index variable is greater than Attacks array! Exiting...")) return; }
+
 		if (Angle(P1->GetActorRightVector(), toP2) > P1->Attacks[static_cast<uint8>(P1->attackType)].Parts[P1->currentPartsIndex].minAngle &&
 			Angle(P1->GetActorRightVector(), toP2) < P1->Attacks[static_cast<uint8>(P1->attackType)].Parts[P1->currentPartsIndex].maxAngle &&
 			(P2->GetActorLocation() - P1->GetActorLocation()).Size() > P1->Attacks[static_cast<uint8>(P1->attackType)].Parts[P1->currentPartsIndex].minDist &&
@@ -85,7 +93,7 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 			{
 				if (!P1->bOpponentIsHit)
 				{
-					if (P2->Health >= P1->Attacks[static_cast<uint8>(P1->attackType)].Damage) P2->Health -= P1->Attacks[static_cast<uint8>(P1->attackType)].Damage;
+					if (P2->Health > P1->Attacks[static_cast<uint8>(P1->attackType)].Damage) P2->Health -= P1->Attacks[static_cast<uint8>(P1->attackType)].Damage;
 					else P2->Health = 0;
 
 					if (!P2->bNonStunnable)
@@ -145,7 +153,7 @@ void AFightManager::testRoundStatus()
 		if (Player1->Health > Player2->Health)
 		{
 			roundCount++;
-			Player2->Lives--;
+			if(Player2->Lives > 0) Player2->Lives--;
 			Player2->State = STATE::KNOCKED_DOWN;
 			Player1->bDisableInput = true;
 			Player2->bDisableInput = true;
@@ -154,7 +162,7 @@ void AFightManager::testRoundStatus()
 		else if (Player2->Health > Player1->Health)
 		{
 			roundCount++;
-			Player1->Lives--;
+			if (Player1->Lives > 0) Player1->Lives--;
 			Player1->State = STATE::KNOCKED_DOWN;
 			Player1->bDisableInput = true;
 			Player2->bDisableInput = true;
@@ -180,7 +188,7 @@ void AFightManager::testRoundStatus()
 		if (Player1->State != STATE::KNOCKED_DOWN)
 		{
 			roundCount++;
-			Player1->Lives--;
+			if (Player1->Lives > 0) Player1->Lives--;
 			Player1->State = STATE::KNOCKED_DOWN;
 			Player1->bDisableInput = true;
 			Player2->bDisableInput = true;
@@ -192,7 +200,7 @@ void AFightManager::testRoundStatus()
 		if (Player2->State != STATE::KNOCKED_DOWN)
 		{
 			roundCount++;
-			Player2->Lives--;
+			if (Player2->Lives > 0) Player2->Lives--;
 			Player2->State = STATE::KNOCKED_DOWN;
 			Player1->bDisableInput = true;
 			Player2->bDisableInput = true;
@@ -232,6 +240,7 @@ void AFightManager::calculateTimers(FVector toP1, FVector toP2)
 			roundState = ROUND_STATE::ROUND_OVER_PLAYER1_WINS;
 		}
 		timeToStart--;
+		return;
 	}
 	else if (timeToStart >= 60)
 	{
@@ -315,11 +324,13 @@ void AFightManager::calculateTimers(FVector toP1, FVector toP2)
 		Player2->bDisableInput = true;
 		roundState = ROUND_STATE::ROUND_RESTARTING;
 		timeToStart--;
+		return;
 	}
 	else if (timeToStart <= (60) && timeToStart > 1)
 	{
 		roundState = ROUND_STATE::ROUND_ABOUT_TO_START;
 		timeToStart--;
+		return;
 	}
 	else if (timeToStart == 1)
 	{
@@ -336,6 +347,7 @@ void AFightManager::calculateTimers(FVector toP1, FVector toP2)
 		Player2->bDisableInput = false;
 		timeToStart = 0;
 		roundState = ROUND_STATE::ROUND_ONGOING;
+		return;
 	}
 }
 

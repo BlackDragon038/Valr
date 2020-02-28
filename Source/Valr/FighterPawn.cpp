@@ -261,7 +261,7 @@ void AFighterPawn::WalkBackToPosition(FVector Pos)
 
 void AFighterPawn::AxisW(float Axis)
 {
-	if (State != STATE::ATTACKING && State != STATE::BLOCKING && State != STATE::STUNNED && Stamina > 10 && State != STATE::STEPPING && !bDisableInput)
+	if (State != STATE::ATTACKING && State != STATE::BLOCKING && State != STATE::STUNNED && State != STATE::STEPPING && !bDisableInput)
 	{
 		if (GetActorLocation().Size() < Instance->maxDistanceFromCenter - MovementSpeed)
 		{
@@ -301,7 +301,7 @@ void AFighterPawn::AxisW(float Axis)
 
 void AFighterPawn::AxisA(float Axis)
 {
-	if (State != STATE::ATTACKING && State != STATE::BLOCKING && State != STATE::STUNNED && Stamina > 10 && State != STATE::STEPPING && Stamina > 25 && !bDisableInput)
+	if (State != STATE::ATTACKING && State != STATE::BLOCKING && State != STATE::STUNNED && State != STATE::STEPPING && Stamina > 25 && !bDisableInput)
 	{
 		if (GetActorLocation().Size() < Instance->maxDistanceFromCenter - MovementSpeed)
 		{
@@ -341,7 +341,7 @@ void AFighterPawn::AxisA(float Axis)
 
 void AFighterPawn::AxisS(float Axis)
 {
-	if (State != STATE::ATTACKING && State != STATE::BLOCKING && State != STATE::STUNNED && Stamina > 10 && State != STATE::STEPPING && !bDisableInput)
+	if (State != STATE::ATTACKING && State != STATE::BLOCKING && State != STATE::STUNNED && State != STATE::STEPPING && !bDisableInput)
 	{
 		if (GetActorLocation().Size() < Instance->maxDistanceFromCenter - MovementSpeed)
 		{
@@ -381,7 +381,7 @@ void AFighterPawn::AxisS(float Axis)
 
 void AFighterPawn::AxisD(float Axis)
 {
-	if (State != STATE::ATTACKING && State != STATE::BLOCKING && State != STATE::STUNNED && Stamina > 10 && State != STATE::STEPPING && !bDisableInput)
+	if (State != STATE::ATTACKING && State != STATE::BLOCKING && State != STATE::STUNNED && State != STATE::STEPPING && !bDisableInput)
 	{
 		if (GetActorLocation().Size() < Instance->maxDistanceFromCenter - MovementSpeed)
 		{
