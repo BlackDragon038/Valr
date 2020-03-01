@@ -45,7 +45,7 @@ void AFighterPawn::BeginPlay()
 void AFighterPawn::Reset()
 {
 	Health = 255;
-	Stamina = 255;
+	Stamina = 0;
 	InputID = INPUT::IDLE;
 	UP_Key = false;
 	DOWN_Key = false;

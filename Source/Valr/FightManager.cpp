@@ -30,8 +30,8 @@ void AFightManager::BeginPlay()
 	GetWorld()->GetFirstPlayerController()->SetViewTarget(Camera);
 	roundState = ROUND_STATE::ROUND_RESTARTING;	
 	Instance = Cast<UFightingGameInstance>(GetGameInstance());
-	//AddTickPrerequisiteActor(Player1);
-	//AddTickPrerequisiteActor(Player2);
+	AddTickPrerequisiteActor(Player1);
+	AddTickPrerequisiteActor(Player2);
 }
 
 void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector toP1, FVector toP2)
@@ -47,11 +47,11 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 	}
 	else if (P1->State == STATE::ATTACKING)
 	{
-		if (static_cast<uint8>(P1->attackType) < P1->Attacks.Num() - 1)
+		if (static_cast<uint8>(P1->attackType) <= P1->Attacks.Num() - 1)
 		{
-			if (P1->currentPartsIndex < P1->Attacks[static_cast<uint8>(P1->attackType)].Parts.Num() - 1)
+			if (P1->currentPartsIndex <= P1->Attacks[static_cast<uint8>(P1->attackType)].Parts.Num() - 1)
 			{
-				if (P1->currentFrameOfAttack >= P1->Attacks[static_cast<uint8>(P1->attackType)].Parts[P1->currentPartsIndex].PSum)
+				if (P1->currentFrameOfAttack > P1->Attacks[static_cast<uint8>(P1->attackType)].Parts[P1->currentPartsIndex].PSum)
 				{
 					if (P1->currentPartsIndex < P1->Attacks[static_cast<uint8>(P1->attackType)].Parts.Num() - 1)
 						P1->currentPartsIndex++;
@@ -68,8 +68,8 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 					}
 				}
 			}
-			else { UE_LOG(LogTemp, Fatal, TEXT("FightManager: currentPartsIndex index variable is greater than Attacks.Parts array! Exiting...")) return; }
-		} else { UE_LOG(LogTemp, Fatal, TEXT("FightManager: attackType index variable is greater than Attacks array! Exiting...")) return; }
+			else { UE_LOG(LogTemp, Fatal, TEXT("FightManager: currentPartsIndex (%i) index variable is greater than Attacks.Parts (%i) array! Exiting..."),P1->currentPartsIndex, P1->Attacks[static_cast<uint8>(P1->attackType)].Parts.Num() - 1) return; }
+		} else { UE_LOG(LogTemp, Fatal, TEXT("FightManager: attackType (%i) index variable is greater than Attacks (%i) array! Exiting..."), static_cast<uint8>(P1->attackType), P1->Attacks.Num() - 1) return; }
 
 		if (Angle(P1->GetActorRightVector(), toP2) > P1->Attacks[static_cast<uint8>(P1->attackType)].Parts[P1->currentPartsIndex].minAngle &&
 			Angle(P1->GetActorRightVector(), toP2) < P1->Attacks[static_cast<uint8>(P1->attackType)].Parts[P1->currentPartsIndex].maxAngle &&
