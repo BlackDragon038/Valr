@@ -32,19 +32,30 @@ void AAIBrain::BeginPlay()
 
 	Fighter = Cast<AFighterPawn>(GetOwner());
 
-	Network = new ArtificialNN(2, 2, 2, 6, 0.2f);
+	Network = new ArtificialNN(3, 14, 2, 6, 0.2f);
+	//assign the weights	
+
 }
 
 void AAIBrain::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	/*Timer += DeltaTime;
+
+//	states.Add(static_cast<double>(Fighter->Health));
+//	states.Add(static_cast<double>(Manager->Player1->Health));
+//	states.Add(FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()));
+//	output = Network->CalcOutput(states)
+
+
+	Timer += DeltaTime;
 
 	TArray<double> states;
 	TArray<double> qs;
 
 	states.Add(static_cast<double>(Fighter->Health));
+	states.Add(static_cast<double>(Manager->Player1->Health));
 	states.Add(FVector::Distance(Fighter->GetActorLocation(),Manager->Player1->GetActorLocation()));
+
 
 	qs = SoftMax(Network->CalcOutput(states));
 	double maxQ = FMath::Max(qs);
@@ -67,8 +78,8 @@ void AAIBrain::Tick(float DeltaTime)
 	);
 
 
-	//if (Fighter->State != STATE::STUNNED && Fighter->State != STATE::STEPPING && Manager->roundState == ROUND_STATE::ROUND_ONGOING && Fighter->State != STATE::GETTING_UP && Fighter->State != STATE::KNOCKED_DOWN && Fighter->Health != 0)
-	//{
+	if (Fighter->State != STATE::STUNNED && Fighter->State != STATE::STEPPING && Manager->roundState == ROUND_STATE::ROUND_ONGOING && Fighter->State != STATE::GETTING_UP && Fighter->State != STATE::KNOCKED_DOWN && Fighter->Health != 0)
+	{
 		switch (maxQIndex)
 		{
 			case 0: Fighter->AxisW(1); Fighter->AxisA(0); Fighter->AxisS(0); Fighter->AxisD(0); break;
@@ -79,24 +90,39 @@ void AAIBrain::Tick(float DeltaTime)
 			case 5: Fighter->AxisW(0); Fighter->AxisA(0); Fighter->AxisS(1); Fighter->AxisD(1); break;
 			case 6: Fighter->AxisW(0); Fighter->AxisA(0); Fighter->AxisS(0); Fighter->AxisD(1); break;
 			case 7: Fighter->AxisW(1); Fighter->AxisA(0); Fighter->AxisS(0); Fighter->AxisD(1); break;
+
 			case 8: Fighter->PressedLight(); break;
 			case 9: Fighter->PressedMedium(); break;
 			case 10: Fighter->PressedHeavy(); break;
 			case 11: Fighter->PressedSpecial(); break;
+
 			case 12: Fighter->AxisBlock(1); break;
 			case 13: Fighter->AxisBlock(0); break;
+			default: break;
 		}
 		if (Manager->Player1->bOpponentIsHit && !Failed) Failed = true;
 		if (Failed && Manager->Player1->currentFrameOfAttack == 0) Failed = false;
-
 		if (!Failed)
 		{
-			currentReward = 0.25f;
+			currentReward = 0.1f;
 		}
 		else currentReward -= 1.0f;
+
+
+		if (FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()) < 175)
+		{
+			currentReward += 0.25f;
+		}
+		else
+			currentReward -= 0.75f;
+		if (Fighter->Health > Manager->Player1->Health)
+			currentReward += 0.25f;
+		else currentReward -= 0.1f;
+
 		
 		Replay* lastMemory = new Replay(
 			static_cast<double>(Fighter->Health),
+			static_cast<double>(Manager->Player1->Health),
 			FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()),
 			currentReward);
 
@@ -142,9 +168,9 @@ void AAIBrain::Tick(float DeltaTime)
 			failCount++;
 			Failed = false;
 		}
-	//}*/
+	}
 
-	if (t >= actionChangeRate)
+	/*if (t >= actionChangeRate)
 	{
 		float Distance = (Manager->Player1->GetActorLocation() - Fighter->GetActorLocation()).Size();
 		n = (Distance > 200 || Manager->Angle(Fighter->GetActorForwardVector(), (Manager->Player1->GetActorLocation() - Fighter->GetActorLocation())) > 45) ? FMath::RandRange(0, 3) : FMath::RandRange(4, 7);
@@ -167,6 +193,6 @@ void AAIBrain::Tick(float DeltaTime)
 			}
 		}
 		t++;
-	}
+	}*/
 	
 }

@@ -15,7 +15,7 @@ public:
 	double output;
 	double errorGradient;
 
-	TArray<double> weights;
+	TArray<double> weights;	//Save this
 	TArray<double> inputs;
 
 	Neuron(int nInputs);

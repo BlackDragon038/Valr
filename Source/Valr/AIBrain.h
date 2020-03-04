@@ -12,12 +12,13 @@
 class Replay
 {
 public:
-	TArray<double> Variables;
+	TArray<double> Variables;	//Save this
 	double Reward;
 
-	Replay(double y, double v, float r)
+	Replay(double y, double x, double v, float r)
 	{
 		Variables.Add(y);
+		Variables.Add(x);
 		Variables.Add(v);
 		Reward = r;
 	}
