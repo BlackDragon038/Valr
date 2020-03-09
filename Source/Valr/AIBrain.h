@@ -12,14 +12,19 @@
 class Replay
 {
 public:
-	TArray<double> Variables;	//Save this
+	TArray<double> States;	//Save this
 	double Reward;
 
-	Replay(double y, double x, double v, float r)
+	Replay(double s1, double s2, double s3, double s4, double s5, double s6, double s7, double s8, float r)
 	{
-		Variables.Add(y);
-		Variables.Add(x);
-		Variables.Add(v);
+		States.Add(s1);
+		States.Add(s2);
+		States.Add(s3);
+		States.Add(s4);
+		States.Add(s5);
+		States.Add(s6);
+		States.Add(s7);
+		States.Add(s8);
 		Reward = r;
 	}
 };
@@ -29,13 +34,15 @@ class VALR_API AAIBrain : public AAIController
 {
 	GENERATED_BODY()
 public:
+
+	UPROPERTY(BlueprintReadOnly)
 	AFighterPawn *Fighter = nullptr;
 
 	ArtificialNN* Network = nullptr;
 
 	double currentReward = 0.0f;						//reward to associate with actions
 	TArray<Replay*> replayMemory;					//memory - list of past actions and rewards
-	int maxCapacity = 1000;						//memory capacity
+	int maxCapacity = 100000;						//memory capacity
 
 	float Discount = 0.99f;						//how much future states affect rewards
 	float exploreRate = 100.0f;					//chance of picking random action

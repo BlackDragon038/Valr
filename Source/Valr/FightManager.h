@@ -61,7 +61,7 @@ protected:
 
 public:	
 
-	float Angle(FVector a, FVector b);
+	static float Angle(FVector a, FVector b);
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

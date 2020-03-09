@@ -31,6 +31,4 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		WARRIOR Player2;
-
-
 };

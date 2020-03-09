@@ -12,6 +12,8 @@
 
 #include "FighterPawn.generated.h"
 
+class AFightManager;
+
 USTRUCT(BlueprintType)
 struct FBlockData
 {
@@ -93,6 +95,8 @@ public:
 	AFighterPawn();
 
 	UFightingGameInstance* Instance;
+
+	AFightManager *Manager;
 
 	UPROPERTY(BlueprintReadOnly)
 		FString Name;

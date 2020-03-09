@@ -2,9 +2,17 @@
 
 #include "FighterPawn.h"
 #include "Kismet/GameplayStatics.h"
-
+#include "FightManager.h"
+#include <algorithm>
 #include <cmath>
 
+template<typename T>
+T Clamp(T value, T min, T max)
+{
+	if (value > max) return max;
+	else if (value < min) return min;
+	return value;
+}
 
 // Sets default values
 AFighterPawn::AFighterPawn()
@@ -40,6 +48,7 @@ void AFighterPawn::BeginPlay()
 	inputBuffer.reserve(inputBufferSize);
 	Name = "Base Fighter";
 	Instance = Cast<UFightingGameInstance>(GetGameInstance());
+	Manager = Cast<AFightManager>(GetOwner());
 }
 
 void AFighterPawn::Reset()
@@ -249,7 +258,7 @@ void AFighterPawn::Tick(float DeltaTime)
 // Called to bind functionality to input
 void AFighterPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	//Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
 void AFighterPawn::WalkBackToPosition(FVector Pos)
@@ -269,7 +278,9 @@ void AFighterPawn::AxisW(float Axis)
 
 			if (UP_Key)
 			{
-				SetActorLocation(GetActorLocation() + GetActorRightVector() * -MovementSpeed);
+				float Speed = FVector::Distance(Manager->Player1->GetActorLocation(), Manager->Player2->GetActorLocation()) * 0.025f;
+				Speed = Clamp(Speed, 2.f, 4.f);
+				SetActorLocation(GetActorLocation() + GetActorRightVector() * -Speed);
 				if (!DOWN_Key) State = STATE::MOVING;
 				else State = STATE::IDLE;
 			}
@@ -309,7 +320,7 @@ void AFighterPawn::AxisA(float Axis)
 
 			if (LEFT_Key)
 			{
-				SetActorLocation(GetActorLocation() + GetActorForwardVector() * -MovementSpeed);
+				SetActorLocation(GetActorLocation() + GetActorForwardVector() * (float)(-MovementSpeed/1.5f));
 				if (!RIGHT_Key) State = STATE::MOVING;
 				else State = STATE::IDLE;
 			}
@@ -349,7 +360,9 @@ void AFighterPawn::AxisS(float Axis)
 
 			if (DOWN_Key)
 			{
-				SetActorLocation(GetActorLocation() + GetActorRightVector() * MovementSpeed);
+				float Speed = FVector::Distance(Manager->Player1->GetActorLocation(), Manager->Player2->GetActorLocation()) * 0.025f;
+				Speed = Clamp(Speed, 2.f, 4.f);
+				SetActorLocation(GetActorLocation() + GetActorRightVector() * Speed);
 				if (!UP_Key) State = STATE::MOVING;
 				else State = STATE::IDLE;
 			}
@@ -617,17 +630,18 @@ void AFighterPawn::PressedSpecial()
 
 void AFighterPawn::PressedBlock()
 {
-	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::STEPPING && Lives > 0)
+	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::STEPPING && !bDisableInput && blockCooldown == 0)
 	{
 		State = STATE::BLOCKING;
+		Stamina -= BlockData.staminaCost;
 		InputID = INPUT::BLOCK;
-		if (Stamina > BlockData.staminaCost) Stamina -= BlockData.staminaCost;
+		blockCooldown = BlockData.Cooldown;
 	}
 }
 
 void AFighterPawn::ReleasedBlock()
 {
-	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::STEPPING && Lives > 0)
+	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::STEPPING && !bDisableInput)
 	{
 		State = STATE::IDLE;
 		InputID = INPUT::IDLE;
