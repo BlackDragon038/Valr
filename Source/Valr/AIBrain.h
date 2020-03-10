@@ -15,16 +15,16 @@ public:
 	TArray<double> States;	//Save this
 	double Reward;
 
-	Replay(double s1, double s2, double s3, double s4, double s5, double s6, double s7, double s8, float r)
+	Replay(double s1, double s2, float r)
 	{
 		States.Add(s1);
 		States.Add(s2);
-		States.Add(s3);
-		States.Add(s4);
-		States.Add(s5);
-		States.Add(s6);
-		States.Add(s7);
-		States.Add(s8);
+		//States.Add(s3);
+		//States.Add(s4);
+		//States.Add(s5);
+		//States.Add(s6);
+		//States.Add(s7);
+		//States.Add(s8);
 		Reward = r;
 	}
 };
@@ -48,7 +48,7 @@ public:
 	float exploreRate = 100.0f;					//chance of picking random action
 	float maxExploreRate = 100.0f;					//max chance value
 	float minExploreRate = 0.01f;					//min chance value
-	float exploreDecay = 0.0001f;					//chance decay amount for each update
+	float exploreDecay = 0.1f;					//chance decay amount for each update
 	bool Failed = false;							//to track when it fails and punish it.
 
 	int failCount = 0;						//amount of times the character was hit
@@ -63,6 +63,8 @@ public:
 
 	uint8 n = 0;
 	uint8 t = 0;
+
+	float dist = 0.f;
 
 public:
 	AAIBrain();

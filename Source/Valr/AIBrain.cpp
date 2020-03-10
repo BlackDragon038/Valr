@@ -31,7 +31,7 @@ void AAIBrain::BeginPlay()
 
 	Fighter = Cast<AFighterPawn>(GetOwner());
 
-	Network = new ArtificialNN(8, 13, 10, 10, 0.8f);
+	Network = new ArtificialNN(2, 3, 6, 8, 0.8f);
 	//assign the weights	
 
 }
@@ -66,88 +66,89 @@ void AAIBrain::Tick(float DeltaTime)
 		message
 	);*/
 
+		dist = FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation());
 		TArray<double> states;
 		TArray<double> qs;
 
-		states.Add(static_cast<double>(Fighter->Health));
-		states.Add(static_cast<double>(Manager->Player1->Health));
+		//states.Add(static_cast<double>(Fighter->Health));
+		//states.Add(static_cast<double>(Manager->Player1->Health));
 		states.Add(FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()));
 		states.Add(static_cast<double>(Fighter->State));
-		states.Add(static_cast<double>(Manager->Player1->State));
-		FVector toEnemyVec = (Manager->Player1->GetActorLocation() - Fighter->GetActorLocation());
-		toEnemyVec.Normalize();
-		float forwardAngle = AFightManager::Angle(toEnemyVec, Fighter->GetActorForwardVector());
-		states.Add(forwardAngle);
-		states.Add(static_cast<double>(Fighter->bOpponentIsHit));
-		states.Add(static_cast<double>(Manager->Player1->bOpponentIsHit));
+		//states.Add(static_cast<double>(Manager->Player1->State));
+		//FVector toEnemyVec = (Manager->Player1->GetActorLocation() - Fighter->GetActorLocation());
+		//toEnemyVec.Normalize();
+		//float forwardAngle = AFightManager::Angle(toEnemyVec, Fighter->GetActorForwardVector());
+		//states.Add(forwardAngle);
+		//states.Add(static_cast<double>(Fighter->bOpponentIsHit));
+		//states.Add(static_cast<double>(Manager->Player1->bOpponentIsHit));
 
 		qs = SoftMax(Network->CalcOutput(states));
 		double maxQ = FMath::Max(qs);
 		int maxQIndex = qs.Find(maxQ);
-		UE_LOG(LogTemp, Warning, TEXT("MaxQValue: %f     Action: %i"), maxQ, maxQIndex)
 			exploreRate = FMath::Clamp(exploreRate - exploreDecay, minExploreRate, maxExploreRate);
 
 		if (FMath::RandRange(0, 100) < exploreRate)
-			maxQIndex = FMath::RandRange(0, qs.Num());
+			maxQIndex = FMath::RandRange(0, qs.Num()-1);
+		UE_LOG(LogTemp, Warning, TEXT("MaxQValue: %f     Action: %i     exploreRate: %f"), maxQ, maxQIndex, exploreRate)
 
 		switch (maxQIndex)
 		{
-			case 0: Fighter->ReleasedBlock(); Fighter->AxisW(1); Fighter->AxisA(0); Fighter->AxisS(0); Fighter->AxisD(0); break;
-			case 1: Fighter->ReleasedBlock(); Fighter->AxisW(1); Fighter->AxisA(1); Fighter->AxisS(0); Fighter->AxisD(0); break;
-			case 2: Fighter->ReleasedBlock(); Fighter->AxisW(0); Fighter->AxisA(1); Fighter->AxisS(0); Fighter->AxisD(0); break;
-			case 3: Fighter->ReleasedBlock(); Fighter->AxisW(0); Fighter->AxisA(1); Fighter->AxisS(1); Fighter->AxisD(0); break;
-			case 4: Fighter->ReleasedBlock(); Fighter->AxisW(0); Fighter->AxisA(0); Fighter->AxisS(1); Fighter->AxisD(0); break;
-			case 5: Fighter->ReleasedBlock(); Fighter->AxisW(0); Fighter->AxisA(0); Fighter->AxisS(1); Fighter->AxisD(1); break;
-			case 6: Fighter->ReleasedBlock(); Fighter->AxisW(0); Fighter->AxisA(0); Fighter->AxisS(0); Fighter->AxisD(1); break;
-			case 7: Fighter->ReleasedBlock(); Fighter->AxisW(1); Fighter->AxisA(0); Fighter->AxisS(0); Fighter->AxisD(1); break;
+			//case 0: Fighter->ReleasedBlock(); Fighter->AxisW(1); Fighter->AxisA(0); Fighter->AxisS(0); Fighter->AxisD(0); break;
+			//case 1: Fighter->ReleasedBlock(); Fighter->AxisW(1); Fighter->AxisA(1); Fighter->AxisS(0); Fighter->AxisD(0); break;
+			case 0: Fighter->ReleasedBlock(); Fighter->AxisW(0); Fighter->AxisA(1); Fighter->AxisS(0); Fighter->AxisD(0); break;
+			//case 3: Fighter->ReleasedBlock(); Fighter->AxisW(0); Fighter->AxisA(1); Fighter->AxisS(1); Fighter->AxisD(0); break;
+			//case 4: Fighter->ReleasedBlock(); Fighter->AxisW(0); Fighter->AxisA(0); Fighter->AxisS(1); Fighter->AxisD(0); break;
+			//case 5: Fighter->ReleasedBlock(); Fighter->AxisW(0); Fighter->AxisA(0); Fighter->AxisS(1); Fighter->AxisD(1); break;
+			case 1: Fighter->ReleasedBlock(); Fighter->AxisW(0); Fighter->AxisA(0); Fighter->AxisS(0); Fighter->AxisD(1); break;
+			//case 7: Fighter->ReleasedBlock(); Fighter->AxisW(1); Fighter->AxisA(0); Fighter->AxisS(0); Fighter->AxisD(1); break;
 
-			case 8: Fighter->ReleasedBlock(); Fighter->PressedLight(); break;
-			case 9: Fighter->ReleasedBlock(); Fighter->PressedMedium(); break;
+			case 2: Fighter->ReleasedBlock(); Fighter->PressedLight(); break;
+			/*case 9: Fighter->ReleasedBlock(); Fighter->PressedMedium(); break;
 			case 10: Fighter->ReleasedBlock(); Fighter->PressedHeavy(); break;
-			case 11: Fighter->ReleasedBlock(); Fighter->PressedSpecial(); break;
+			case 11: Fighter->ReleasedBlock(); Fighter->PressedSpecial(); break;*/
 
-			case 12: Fighter->PressedBlock(); break;
+			//case 8: Fighter->PressedBlock(); break;
 			default: break;
 		}
 		if (Manager->Player1->bOpponentIsHit && !Failed) Failed = true;
 		if (Failed && Manager->Player1->currentFrameOfAttack == 0) Failed = false;
 
-		if (Fighter->bOpponentIsHit)
+		currentReward = 10.0f;
+		if (FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()) < dist)
 		{
-			currentReward = 0.65f;
-			UE_LOG(LogTemp, Warning, TEXT("AI isn't hit"))
+			currentReward += 100.f;
+			UE_LOG(LogTemp, Warning, TEXT("AI is getting close to enemy"))
 		}
-		else if (Manager->Player1->bOpponentIsHit)
-		{
-			currentReward = -0.5f;
-			UE_LOG(LogTemp, Warning, TEXT("AI was hit"))
-		}
-		else currentReward = -0.001f;
-
-		if (FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()) < 175)
-		{
-			currentReward += 0.7f;
-			UE_LOG(LogTemp, Warning, TEXT("AI is getting close to enemy")) 
-		}	
 		else
 		{
-			currentReward -= 0.4f;
+			currentReward += -10.0f;
 			UE_LOG(LogTemp, Warning, TEXT("AI is fleeing!"))
 		}
 
-		if (Fighter->Health > Manager->Player1->Health)
+		if (Fighter->State == STATE::ATTACKING && FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()) < 150)
 		{
-			currentReward += 0.5f;
+			currentReward += 10.0f;
+			UE_LOG(LogTemp, Warning, TEXT("AI isn't hit"))
+		}
+		else if (Fighter->State == STATE::ATTACKING && FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()) > 150)
+		{
+			currentReward += -50.f;
+			UE_LOG(LogTemp, Warning, TEXT("AI was hit"))
+		}
+
+		UE_LOG(LogTemp, Warning, TEXT("dist : %f"), FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()))
+		/*if (Fighter->Health > Manager->Player1->Health)
+		{
+			currentReward += 50.f;
 			UE_LOG(LogTemp, Warning, TEXT("AI has more health than enemy"))
 		}
-			
 		else
 		{
 			UE_LOG(LogTemp, Warning, TEXT("AI has less health than enemy")) 
-			currentReward -= 0.2f;
-		}
+			currentReward -= 10.f;
+		}*/
 
-		if (forwardAngle < 90)
+		/*if (forwardAngle < 90)
 		{
 			currentReward += 0.55f;
 			UE_LOG(LogTemp, Warning, TEXT("AI is facing the correct direction")) 
@@ -156,19 +157,13 @@ void AAIBrain::Tick(float DeltaTime)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("AI is facing the wrong direction"))
 			currentReward -= 0.25;
-		}
+		}*/
 
-		//UE_LOG(LogTemp, Warning, TEXT("Reward: %f"), currentReward);
+		UE_LOG(LogTemp, Warning, TEXT("Reward: %f"), currentReward);
 		
 		Replay* lastMemory = new Replay(
-			static_cast<double>(Fighter->Health),
-			static_cast<double>(Manager->Player1->Health),
 			FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()),
 			static_cast<double>(Fighter->State),
-			static_cast<double>(Manager->Player1->State),
-			forwardAngle,
-			static_cast<double>(Fighter->bOpponentIsHit),
-			static_cast<double>(Manager->Player1->bOpponentIsHit),
 			currentReward);
 
 		if (replayMemory.Num() > maxCapacity)
@@ -206,6 +201,7 @@ void AAIBrain::Tick(float DeltaTime)
 			}
 			Failed = false;
 			replayMemory.Empty();
+			UE_LOG(LogTemp,Warning,TEXT("Memory Cleared"))
 		}
 
 	/*if (t >= actionChangeRate)
