@@ -36,7 +36,7 @@ class VALR_API AAIBrain : public AAIController
 public:
 
 	UPROPERTY(BlueprintReadOnly)
-	AFighterPawn *Fighter = nullptr;
+		AFighterPawn* Fighter = nullptr;
 
 	ArtificialNN* Network = nullptr;
 
@@ -48,7 +48,7 @@ public:
 	float exploreRate = 100.0f;					//chance of picking random action
 	float maxExploreRate = 100.0f;					//max chance value
 	float minExploreRate = 0.01f;					//min chance value
-	float exploreDecay = 0.1f;					//chance decay amount for each update
+	float exploreDecay = 0.01f;					//chance decay amount for each update
 	bool Failed = false;							//to track when it fails and punish it.
 
 	int failCount = 0;						//amount of times the character was hit
@@ -59,7 +59,7 @@ public:
 		int actionChangeRate = 200;
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"), BlueprintReadWrite)
-		AFightManager *Manager = nullptr;
+		AFightManager* Manager = nullptr;
 
 	uint8 n = 0;
 	uint8 t = 0;
