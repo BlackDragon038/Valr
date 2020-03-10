@@ -84,8 +84,11 @@ void AAIBrain::Tick(float DeltaTime)
 		qs = SoftMax(Network->CalcOutput(states));
 		double maxQ = FMath::Max(qs);
 		int maxQIndex = qs.Find(maxQ);
-		UE_LOG(LogTemp, Warning, TEXT("MaxQValue: %d     Action: %i"), maxQ, maxQIndex)
+		UE_LOG(LogTemp, Warning, TEXT("MaxQValue: %f     Action: %i"), maxQ, maxQIndex)
 			exploreRate = FMath::Clamp(exploreRate - exploreDecay, minExploreRate, maxExploreRate);
+
+		if (FMath::RandRange(0, 100) < exploreRate)
+			maxQIndex = FMath::RandRange(0, qs.Num());
 
 		switch (maxQIndex)
 		{
