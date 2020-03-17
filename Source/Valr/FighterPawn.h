@@ -226,6 +226,7 @@ public:
 	void PressedMedium();
 	void PressedHeavy();
 	virtual void PressedSpecial();
+	virtual void ReleasedSpecial(){}
 	void PressedBlock();
 	void ReleasedBlock();
 	void AxisBlock(float Axis);

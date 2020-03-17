@@ -20,5 +20,13 @@ public:
 	void Tick(float DeltaTime);
 
 	void PressedSpecial() override;
+
+	void ReleasedSpecial() override;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Base Stats")
+		uint8 healEveryXFrame = 1;
+
+	uint8 healEveryFrame = 0;
 	
 };

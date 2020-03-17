@@ -432,6 +432,7 @@ void AFightManager::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("Player1_Medium", IE_Pressed, Player1, &AFighterPawn::PressedMedium);
 	PlayerInputComponent->BindAction("Player1_Heavy", IE_Pressed, Player1, &AFighterPawn::PressedHeavy);
 	PlayerInputComponent->BindAction("Player1_Special", IE_Pressed, Player1, &AFighterPawn::PressedSpecial);
+	PlayerInputComponent->BindAction("Player1_Special", IE_Released, Player1, &AFighterPawn::ReleasedSpecial);
 	PlayerInputComponent->BindAxis("Player1_Block", Player1, &AFighterPawn::AxisBlock);
 
 	PlayerInputComponent->BindAxis("Player2_W", Player2, &AFighterPawn::AxisS);
@@ -442,6 +443,7 @@ void AFightManager::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("Player2_Medium", IE_Pressed, Player2, &AFighterPawn::PressedMedium);
 	PlayerInputComponent->BindAction("Player2_Heavy", IE_Pressed, Player2, &AFighterPawn::PressedHeavy);
 	PlayerInputComponent->BindAction("Player2_Special", IE_Pressed, Player2, &AFighterPawn::PressedSpecial);
+	PlayerInputComponent->BindAction("Player2_Special", IE_Released, Player2, &AFighterPawn::ReleasedSpecial);
 	PlayerInputComponent->BindAxis("Player2_Block", Player2, &AFighterPawn::AxisBlock);
 
 }

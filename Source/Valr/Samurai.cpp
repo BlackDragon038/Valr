@@ -30,7 +30,7 @@ void ASamurai::Tick(float DeltaTime)
 
 void ASamurai::PressedSpecial()
 {
-	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING &&  specialMeter >= Attacks[static_cast<uint8>(ATTACK_TYPE::SPECIAL)].staminaCost && State != STATE::STEPPING)
+	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::BLOCKING &&  specialMeter >= Attacks[static_cast<uint8>(ATTACK_TYPE::SPECIAL)].staminaCost && State != STATE::STEPPING && !bDisableInput)
 	{
 		State = STATE::ATTACKING;
 		InputID = INPUT::SPECIAL;
