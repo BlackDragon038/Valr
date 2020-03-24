@@ -1,7 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ArtificialNN.h"
-//#include <math.h>       /* round, floor, ceil, trunc */
+#include <cmath>
+#include <fstream>
+#include <sstream>
+#include <string>
 #include "Engine.h"
 
 ArtificialNN::ArtificialNN(int nIn, int nOut, int nHidden, int nPH, double a)
@@ -31,10 +34,10 @@ ArtificialNN::ArtificialNN(int nIn, int nOut, int nHidden, int nPH, double a)
 
 ArtificialNN::~ArtificialNN()
 {
-	//for (int i = layers.Num() - 1; i >= 0; i--)
-	//{
-	//	delete layers[0];
-	//}
+	for (int i = layers.Num() - 1; i >= 0; i--)
+	{
+		delete layers[i];
+	}
 }
 
 TArray<double> ArtificialNN::Train(TArray<double> inputValues, TArray<double> desiredOutput)
@@ -242,11 +245,15 @@ void ArtificialNN::UpdateWeights(TArray<double> outputs, TArray<double> desiredO
 */
 }
 
-void ArtificialNN::LoadWeights(FString weightStr)
+void ArtificialNN::LoadWeights(const char* filePath)
 {
-	if (weightStr == "") return;
-	TArray<FString> weightValues;
+	std::stringstream buffer;
+	std::ifstream file;
+	file.open(filePath, std::ifstream::in);
+	buffer << file.rdbuf();
 
+	FString weightStr = buffer.str().c_str();
+	TArray<FString> weightValues;
 	weightStr.ParseIntoArray(weightValues, TEXT(","));
 	int w = 0;
 	for (NetworkLayer *l : layers)
@@ -264,11 +271,29 @@ void ArtificialNN::LoadWeights(FString weightStr)
 	}
 }
 
+void ArtificialNN::SaveWeights(FString fileName)
+{
+	UE_LOG(LogTemp,Warning,TEXT("SAVED DIRECTORY: %s"), *FPaths::ProjectSavedDir())
+	FString path = FPaths::ProjectSavedDir() + fileName + ".wdt";
+	std::string fullPath = TCHAR_TO_UTF8(*path);
+	std::ofstream out(fullPath);
+	if (!out.good())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Terrain: Something went wrong when exporting the OBJ file.\nPlease make sure that the saving file location is correct!"));
+		return;
+	}
+	for (auto *l : layers)
+		for (auto *n : l->neurons)
+			for (auto w : n->weights)
+				out << w <<",";
+	out.close();
+}
+
 //for full list of activation function
 //see en.wikipedia.org/wiki/Activation_function
 double ArtificialNN::ActivationFunction(double value)
 {
-	return TanH(value);
+	return ReLu(value);
 }
 
 double ArtificialNN::ActivationFunctionO(double value)

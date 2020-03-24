@@ -13,17 +13,15 @@ class Replay
 {
 public:
 	TArray<double> States;	//Save this
-	double Reward;
+	double Reward = 0;
 
-	Replay(double s1, double s2, double s3, float r)
+	Replay(double s1, double s2, double s3, double s4, double s5, float r)
 	{
 		States.Add(s1);
 		States.Add(s2);
 		States.Add(s3);
-		//States.Add(s5);
-		//States.Add(s6);
-		//States.Add(s7);
-		//States.Add(s8);
+		States.Add(s4);
+		States.Add(s5);
 		Reward = r;
 	}
 };
@@ -41,7 +39,7 @@ public:
 
 	double currentReward = 0.0f;						//reward to associate with actions
 	TArray<Replay*> replayMemory;					//memory - list of past actions and rewards
-	int maxCapacity = 10000;						//memory capacity
+	int maxCapacity = 5000;						//memory capacity
 
 	float Discount = 0.99f;						//how much future states affect rewards
 	float exploreRate = 100.0f;					//chance of picking random action
@@ -63,7 +61,9 @@ public:
 	uint8 n = 0;
 	uint8 t = 0;
 
-	float currentDistance = 0.f;
+	uint8 enemyHealth = 0;
+	int attackTimer = 0;
+	int holdMaxQIndex = 0;
 	int record = 0;
 
 public:

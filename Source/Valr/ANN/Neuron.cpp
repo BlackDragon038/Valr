@@ -14,4 +14,6 @@ Neuron::Neuron(int nInputs)
 
 Neuron::~Neuron()
 {
+	weights.Empty();
+	inputs.Empty();
 }

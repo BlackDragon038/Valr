@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-
 #include "NetworkLayer.h"
 /**
  * 
@@ -34,7 +33,9 @@ public:
 
 	void UpdateWeights(TArray<double> outputs, TArray<double> desiredOutput);
 
-	void LoadWeights( FString weightStr);
+	void LoadWeights(const char* filePath);
+
+	void SaveWeights(FString fileName);
 
 	double ActivationFunction(double value);
 

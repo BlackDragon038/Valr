@@ -630,12 +630,15 @@ void AFighterPawn::PressedSpecial()
 
 void AFighterPawn::PressedBlock()
 {
-	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::STEPPING && !bDisableInput && blockCooldown == 0)
+	if (State != STATE::ATTACKING && State != STATE::STUNNED && State != STATE::STEPPING && !bDisableInput)
 	{
-		State = STATE::BLOCKING;
-		Stamina -= BlockData.staminaCost;
-		InputID = INPUT::BLOCK;
-		blockCooldown = BlockData.Cooldown;
+		if (blockCooldown == 0 && Stamina > BlockData.staminaCost)
+		{
+			State = STATE::BLOCKING;
+			Stamina -= BlockData.staminaCost;
+			InputID = INPUT::BLOCK;
+			blockCooldown = BlockData.Cooldown;
+		}
 	}
 }
 

@@ -14,8 +14,8 @@ NetworkLayer::NetworkLayer(int nNeurons, int numNeuronInputs)
 
 NetworkLayer::~NetworkLayer()
 {
-	//for (int i = neurons.Num() - 1; i >= 0; i--)
-	//{
-	//	delete neurons[i];
-	//}
+	for (int i = neurons.Num() - 1; i >= 0; i--)
+	{
+		delete neurons[i];
+	}
 }
