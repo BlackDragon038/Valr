@@ -77,6 +77,7 @@ void AFighterPawn::Reset()
 	bOpponentIsHit = false;
 	bResetAnimation = false;
 	bCanCombo = true;
+	bAllowParry = false;
 }
 
 void AFighterPawn::AttackReset()
@@ -661,6 +662,16 @@ void AFighterPawn::AxisBlock(float Axis)
 			if (InputID != INPUT::BLOCK)
 			{
 				Stamina -= BlockData.staminaCost;
+				if (Manager->Player1 == this)
+				{
+					if (Manager->Player2->State == STATE::ATTACKING)
+						bAllowParry = true;
+				}
+				else if (Manager->Player2 == this)
+				{
+					if (Manager->Player1->State == STATE::ATTACKING)
+						bAllowParry = true;
+				}
 			}
 			InputID = INPUT::BLOCK;
 			blockCooldown = BlockData.Cooldown;
@@ -669,6 +680,7 @@ void AFighterPawn::AxisBlock(float Axis)
 		{
 			if (InputID == INPUT::BLOCK)
 			{
+				bAllowParry = false;
 				State = STATE::IDLE;
 				InputID = INPUT::IDLE;
 			}

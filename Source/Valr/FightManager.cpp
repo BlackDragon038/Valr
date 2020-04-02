@@ -64,6 +64,7 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 						P1->attackType = ATTACK_TYPE::NONE;
 						P1->bOpponentIsHit = false;
 						P1->bCanCombo = true;
+						P1->bAllowParry = false;
 						return;
 					}
 				}
@@ -79,12 +80,13 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 		{
 			if (P2->State == STATE::BLOCKING && Angle(P2->GetActorForwardVector(), toP1) < P2->BlockData.Angle &&
 				(P1->GetActorLocation() - P2->GetActorLocation()).Size() > P2->BlockData.minDist &&
-				(P1->GetActorLocation() - P2->GetActorLocation()).Size() < P2->BlockData.maxDist && !P1->Attacks[static_cast<uint8>(P1->attackType)].bUnblockableAttack)
+				(P1->GetActorLocation() - P2->GetActorLocation()).Size() < P2->BlockData.maxDist && !P1->Attacks[static_cast<uint8>(P1->attackType)].bUnblockableAttack && P2->bAllowParry)
 			{
 				uint8 specialCharge = P1->Attacks[static_cast<uint8>(P1->attackType)].Damage* P2->specialChargeMultiplier;
 				if (P2->specialMeter <= 255-specialCharge) P2->specialMeter += specialCharge;
 				else P2->specialMeter = 255;
 				P1->State = STATE::STUNNED;
+				P2->bAllowParry = false;
 				P1->currentFrameOfAttack = P2->BlockData.blockStunRate;
 				P1->stunPush = P2->BlockData.blockPushPower;
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), P1->hitParticle, { FRotator(),FVector(P2->GetActorLocation() + FVector(0, 0, 120) + toP1 * (PlayerDistance/2)),FVector(0.25,0.25,0.25) });
@@ -95,6 +97,17 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 				{
 					if (P2->Health > P1->Attacks[static_cast<uint8>(P1->attackType)].Damage) P2->Health -= P1->Attacks[static_cast<uint8>(P1->attackType)].Damage;
 					else P2->Health = 0;
+
+					P2->steppingSpeed = 0;
+					P2->steppingFrameTime = 0;
+					P2->bDoubleTapW = false;
+					P2->bDoubleTapA = false;
+					P2->bDoubleTapS = false;
+					P2->bDoubleTapD = false;
+					P2->KeyW = AFighterPawn::KEY_STATE::RESET;
+					P2->KeyA = AFighterPawn::KEY_STATE::RESET;
+					P2->KeyS = AFighterPawn::KEY_STATE::RESET;
+					P2->KeyD = AFighterPawn::KEY_STATE::RESET;
 
 					if (!P2->bNonStunnable)
 					{
@@ -142,6 +155,7 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 			P1->currentPartsIndex = 0;
 			P1->stunPush = 1;
 			P1->attackType = ATTACK_TYPE::NONE;
+			P1->bAllowParry = false;
 		}
 	}
 }
@@ -360,6 +374,7 @@ float AFightManager::Angle(FVector a, FVector b)
 void AFightManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
 	FVector toPlayer1 = Player1->GetActorLocation() - Player2->GetActorLocation();
 	FVector toPlayer2 = Player2->GetActorLocation() - Player1->GetActorLocation();
 	toPlayer1.Normalize();
@@ -423,8 +438,7 @@ void AFightManager::Tick(float DeltaTime)
 void AFightManager::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	/*PlayerInputComponent->BindAxis("Player1_W", Player1, &AFighterPawn::AxisW);
+	PlayerInputComponent->BindAxis("Player1_W", Player1, &AFighterPawn::AxisW);
 	PlayerInputComponent->BindAxis("Player1_A", Player1, &AFighterPawn::AxisA);
 	PlayerInputComponent->BindAxis("Player1_S", Player1, &AFighterPawn::AxisS);
 	PlayerInputComponent->BindAxis("Player1_D", Player1, &AFighterPawn::AxisD);
@@ -435,15 +449,17 @@ void AFightManager::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("Player1_Special", IE_Released, Player1, &AFighterPawn::ReleasedSpecial);
 	PlayerInputComponent->BindAxis("Player1_Block", Player1, &AFighterPawn::AxisBlock);
 
-	/*PlayerInputComponent->BindAxis("Player2_W", Player2, &AFighterPawn::AxisS);
-	PlayerInputComponent->BindAxis("Player2_A", Player2, &AFighterPawn::AxisD);
-	PlayerInputComponent->BindAxis("Player2_S", Player2, &AFighterPawn::AxisW);
-	PlayerInputComponent->BindAxis("Player2_D", Player2, &AFighterPawn::AxisA);
-	PlayerInputComponent->BindAction("Player2_Light", IE_Pressed, Player2, &AFighterPawn::PressedLight);
-	PlayerInputComponent->BindAction("Player2_Medium", IE_Pressed, Player2, &AFighterPawn::PressedMedium);
-	PlayerInputComponent->BindAction("Player2_Heavy", IE_Pressed, Player2, &AFighterPawn::PressedHeavy);
-	PlayerInputComponent->BindAction("Player2_Special", IE_Pressed, Player2, &AFighterPawn::PressedSpecial);
-	PlayerInputComponent->BindAction("Player2_Special", IE_Released, Player2, &AFighterPawn::ReleasedSpecial);
-	PlayerInputComponent->BindAxis("Player2_Block", Player2, &AFighterPawn::AxisBlock);*/
-
+	if (Instance->GameMode != GAME_STATE::SINGLEPLAYER)
+	{
+		PlayerInputComponent->BindAxis("Player2_W", Player2, &AFighterPawn::AxisS);
+		PlayerInputComponent->BindAxis("Player2_A", Player2, &AFighterPawn::AxisD);
+		PlayerInputComponent->BindAxis("Player2_S", Player2, &AFighterPawn::AxisW);
+		PlayerInputComponent->BindAxis("Player2_D", Player2, &AFighterPawn::AxisA);
+		PlayerInputComponent->BindAction("Player2_Light", IE_Pressed, Player2, &AFighterPawn::PressedLight);
+		PlayerInputComponent->BindAction("Player2_Medium", IE_Pressed, Player2, &AFighterPawn::PressedMedium);
+		PlayerInputComponent->BindAction("Player2_Heavy", IE_Pressed, Player2, &AFighterPawn::PressedHeavy);
+		PlayerInputComponent->BindAction("Player2_Special", IE_Pressed, Player2, &AFighterPawn::PressedSpecial);
+		PlayerInputComponent->BindAction("Player2_Special", IE_Released, Player2, &AFighterPawn::ReleasedSpecial);
+		PlayerInputComponent->BindAxis("Player2_Block", Player2, &AFighterPawn::AxisBlock);
+	}
 }

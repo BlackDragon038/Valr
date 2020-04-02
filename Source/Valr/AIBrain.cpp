@@ -38,8 +38,9 @@ void AAIBrain::BeginPlay()
 	FMath::SRandInit(unsigned(time(0)));
 	Fighter = Cast<AFighterPawn>(GetOwner());
 	replayMemory.Reserve(maxCapacity);
-	Network = new ArtificialNN(5, 13, 3, 13, 0.5f);
-	//assign the weights
+	Network = new ArtificialNN(6, 13, 3, 13, 0.5f);
+	//std::string path = TCHAR_TO_UTF8(*(FPaths::ProjectSavedDir() + "model1.wdt"));
+	//Network->LoadWeights(path.c_str());
 }
 
 void AAIBrain::Tick(float DeltaTime)
@@ -70,12 +71,6 @@ void AAIBrain::Tick(float DeltaTime)
 		message
 	);*/
 
-	if (record > 0)
-	{
-		record = 0;
-		enemyHealth = Manager->Player1->Health;
-	} else record++;
-
 	TArray<double> states;
 	TArray<double> qs;
 
@@ -84,6 +79,7 @@ void AAIBrain::Tick(float DeltaTime)
 	states.Add(FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()));
 	states.Add(static_cast<double>(Fighter->State));
 	states.Add(static_cast<double>(Fighter->attackType));
+	states.Add(static_cast<double>(AFightManager::Angle(Fighter->GetActorForwardVector(), (Manager->Player1->GetActorLocation() - Fighter->GetActorLocation()).GetSafeNormal())));
 
 	qs = SoftMax(Network->CalcOutput(states));
 	double maxQ = FMath::Max(qs);
@@ -94,32 +90,31 @@ void AAIBrain::Tick(float DeltaTime)
 	int attackArr[] = { 0,0,0,0,0,0,0,0,0,0,1,1,2,2,2,2,2,2,2,2,2,2,3,3,4,4,4,4,4,4,4,4,4,4,5,5,6,6,6,6,6,6,6,6,6,6,7,7,8,8,8,8,9,9,9,10,10,11,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12};
 	if (FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()) > FMath::RandRange(160,180))
 	{
-		if (FMath::RandRange(0, 100) < exploreRate && Timer > 10)
+		if (FMath::RandRange(0, 100) < exploreRate && Timer > 15)
 		{
 			maxQIndex = BiasRand(movementArr, 71);
 			holdMaxQIndex = maxQIndex;
 		}
-		else if (FMath::RandRange(0, 100) < exploreRate && Timer < 10) 
+		else if (FMath::RandRange(0, 100) < exploreRate && Timer < 15) 
 			maxQIndex = holdMaxQIndex;
 	}
 	else
 	{
-		if (FMath::RandRange(0, 100) < exploreRate && Timer > 10)
+		if (FMath::RandRange(0, 100) < exploreRate && Timer > 15)
 		{
 			maxQIndex = BiasRand(attackArr, 87);
 			holdMaxQIndex = maxQIndex;
 		}
-		else if (FMath::RandRange(0, 100) < exploreRate && Timer < 10)
+		else if (FMath::RandRange(0, 100) < exploreRate && Timer < 15)
 			maxQIndex = holdMaxQIndex;
 	}
-	if (Timer > 10) Timer = 0;
+	if (Timer > 15) Timer = 0;
 	else Timer++;
 
 	if (maxQIndex != 11 && Fighter->attackType == ATTACK_TYPE::SPECIAL && Fighter == static_cast<ACrusader*>(Fighter)) { static_cast<ACrusader*>(Fighter)->ReleasedSpecial(); UE_LOG(LogTemp, Error, TEXT("RELEASED SPECIAL")) }
 	if (maxQIndex != 12 && Fighter->State == STATE::BLOCKING) Fighter->AxisBlock(0);
-	//UE_LOG(LogTemp, Warning, TEXT("Weights: %s"), *Network->PrintWeights());
+	UE_LOG(LogTemp, Warning, TEXT("Weights: %s"), *Network->PrintWeights());
 	UE_LOG(LogTemp, Warning, TEXT("MaxQValue: %f	Action: %i		exploreRate: %f"), maxQ, maxQIndex, exploreRate)
-	UE_LOG(LogTemp, Warning, TEXT("Input %i"), Fighter->InputID);
 	
 	switch (maxQIndex)
 	{
@@ -187,19 +182,21 @@ void AAIBrain::Tick(float DeltaTime)
 		{
 			currentReward = -0.5f;
 		}
-		else if (FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()) < 175 && Fighter->Health >= 63)
+		else if (FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()) < 175)
 		{
-			if (attackTimer > 120)
+			if (AFightManager::Angle(Fighter->GetActorForwardVector(), (Manager->Player1->GetActorLocation() - Fighter->GetActorLocation()).GetSafeNormal()) < 90)
 			{
-				currentReward = -1.0f;
+				if (attackTimer > 120)
+				{
+					currentReward = -1.0f;
+				}
+				else
+				{
+					currentReward = 1.0f;
+					attackTimer++;
+				}
 			}
-			else
-			{
-				currentReward = 0.1f;
-				attackTimer++;
-			}
-
-			//UE_LOG(LogTemp, Warning, TEXT("%i ... AI is battling forward!"), maxQIndex)
+			else currentReward = -1.0f;
 		}
 	}
 	else if (Fighter->State == STATE::STUNNED)
@@ -222,8 +219,8 @@ void AAIBrain::Tick(float DeltaTime)
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("%i ... NOTHING HAPPENED ... %d"), maxQIndex, Fighter->State)
 	}
-
 	UE_LOG(LogTemp, Warning, TEXT("Reward: %f	State: %i"), currentReward, Fighter->State);
+	UE_LOG(LogTemp, Error, TEXT("Angle: %f"), AFightManager::Angle(Fighter->GetActorForwardVector(), (Manager->Player1->GetActorLocation() - Fighter->GetActorLocation()).GetSafeNormal()))
 
 	Replay* lastMemory = new Replay(
 		static_cast<double>(Fighter->Health),
@@ -231,6 +228,7 @@ void AAIBrain::Tick(float DeltaTime)
 		FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()),
 		static_cast<double>(Fighter->State),
 		static_cast<double>(Fighter->attackType),
+		static_cast<double>(AFightManager::Angle(Fighter->GetActorForwardVector(), (Manager->Player1->GetActorLocation() - Fighter->GetActorLocation()).GetSafeNormal())),
 		currentReward);
 
 	if (replayMemory.Num() > maxCapacity)
@@ -266,35 +264,11 @@ void AAIBrain::Tick(float DeltaTime)
 			t_outputsOld[action] = feedback;
 			Network->Train(replayMemory[i]->States, t_outputsOld);
 		}
-		Failed = false;
 		replayMemory.Empty();
-		exploreRate += (1 / exploreRate) * 0.5f;
-		//UE_LOG(LogTemp, Warning, TEXT("Memory Cleared"))
+		exploreRate += (1 / exploreRate) * exploreDecay;
 	}
-
-	/*if (t >= actionChangeRate)
+	if (exploreRate <= 1)
 	{
-		float Distance = (Manager->Player1->GetActorLocation() - Fighter->GetActorLocation()).Size();
-		n = (Distance > 200 || Manager->Angle(Fighter->GetActorForwardVector(), (Manager->Player1->GetActorLocation() - Fighter->GetActorLocation())) > 45) ? FMath::RandRange(0, 3) : FMath::RandRange(4, 7);
-		t = 0;
+		Network->SaveWeights("model" + Fighter->GetName());
 	}
-	else
-	{
-		if (Fighter->State != STATE::STUNNED && Fighter->State != STATE::STEPPING && Manager->roundState == ROUND_STATE::ROUND_ONGOING)
-		{
-			switch (n)
-			{
-			case 0: Fighter->AxisW(1); Fighter->AxisA(0); Fighter->AxisS(0); Fighter->AxisD(0); break;
-			case 1: Fighter->AxisW(0); Fighter->AxisA(1); Fighter->AxisS(0); Fighter->AxisD(0); break;
-			case 2: Fighter->AxisW(0); Fighter->AxisA(0); Fighter->AxisS(1); Fighter->AxisD(0); break;
-			case 3: Fighter->AxisW(0); Fighter->AxisA(0); Fighter->AxisS(0); Fighter->AxisD(1); break;
-			case 4: Fighter->PressedLight(); break;
-			case 5: Fighter->PressedMedium(); break;
-			case 6: Fighter->PressedHeavy(); break;
-			case 7: Fighter->PressedSpecial(); break;
-			}
-		}
-		t++;
-	}*/
-
 }

@@ -282,10 +282,7 @@ void ArtificialNN::SaveWeights(FString fileName)
 		UE_LOG(LogTemp, Warning, TEXT("Terrain: Something went wrong when exporting the OBJ file.\nPlease make sure that the saving file location is correct!"));
 		return;
 	}
-	for (auto *l : layers)
-		for (auto *n : l->neurons)
-			for (auto w : n->weights)
-				out << w <<",";
+	out << TCHAR_TO_UTF8(*PrintWeights());
 	out.close();
 }
 
