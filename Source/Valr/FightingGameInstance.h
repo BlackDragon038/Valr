@@ -10,16 +10,21 @@
  * 
  */
 UENUM(BlueprintType)
-enum class GAME_STATE : uint8 { SINGLEPLAYER, MULTIPLAYER, TRAINING };
+enum class GAME_STATE : uint8 { SINGLEPLAYER_STORY_MODE, SINGLEPLAYER_SINGLE_MATCH, MULTIPLAYER, TRAINING };
 
 UENUM(BlueprintType)
-enum class WARRIOR : uint8 { CRUSADER, VIKING, SAMURAI, KNIGHT, NINJA };
+enum class WARRIOR : uint8 { CRUSADER, VIKING, SAMURAI, KNIGHT, NINJA, SPARTAN, SOLDIER, JANISSARY};
 
 UCLASS()
 class VALR_API UFightingGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
 public:
+
+	UFightingGameInstance();
+
+	void SavePlayerFile();
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		GAME_STATE GameMode;
 
@@ -31,4 +36,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		WARRIOR Player2;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		int PlayerCoins = 1000;
 };

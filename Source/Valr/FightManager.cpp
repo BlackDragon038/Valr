@@ -237,6 +237,8 @@ void AFightManager::calculateTimers(FVector toP1, FVector toP2)
 		roundState = ROUND_STATE::MATCH_OVER_PLAYER1_WINS;
 		Player1->bDisableInput = true;
 		Player2->bDisableInput = true;
+		Instance->PlayerCoins += 100;
+		Instance->SavePlayerFile();
 		return;
 	}
 	if (timeToStart == 0)
@@ -449,7 +451,7 @@ void AFightManager::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("Player1_Special", IE_Released, Player1, &AFighterPawn::ReleasedSpecial);
 	PlayerInputComponent->BindAxis("Player1_Block", Player1, &AFighterPawn::AxisBlock);
 
-	if (Instance->GameMode != GAME_STATE::SINGLEPLAYER)
+	if (Instance->GameMode == GAME_STATE::MULTIPLAYER)
 	{
 		PlayerInputComponent->BindAxis("Player2_W", Player2, &AFighterPawn::AxisS);
 		PlayerInputComponent->BindAxis("Player2_A", Player2, &AFighterPawn::AxisD);
