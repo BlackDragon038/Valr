@@ -9,6 +9,35 @@
 /**
  * 
  */
+USTRUCT(BlueprintType)
+struct FColorData
+{
+	GENERATED_BODY()
+
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float R = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float G = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float B = 0;
+};
+
+USTRUCT(BlueprintType)
+struct FCharacterColorData
+{
+	GENERATED_BODY()
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FColorData Headgear;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FColorData Armor_1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FColorData Armor_2;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FColorData Special_1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FColorData Special_2;
+};
+
 UENUM(BlueprintType)
 enum class GAME_STATE : uint8 { SINGLEPLAYER_STORY_MODE, SINGLEPLAYER_SINGLE_MATCH, MULTIPLAYER, TRAINING };
 
@@ -23,7 +52,10 @@ public:
 
 	UFightingGameInstance();
 
-	void SavePlayerFile();
+	void Init() override;
+
+	UFUNCTION(BlueprintCallable, Category = "Save Player File")
+		void SavePlayerFile();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		GAME_STATE GameMode;
@@ -39,4 +71,29 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		int PlayerCoins = 1000;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FCharacterColorData Crusader;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FCharacterColorData Viking;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FCharacterColorData Samurai;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FCharacterColorData Knight;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FCharacterColorData Ninja;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FCharacterColorData Spartan;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FCharacterColorData Soldier;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FCharacterColorData Janissary;
+
 };

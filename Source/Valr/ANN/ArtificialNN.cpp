@@ -273,7 +273,6 @@ void ArtificialNN::LoadWeights(const char* filePath)
 
 void ArtificialNN::SaveWeights(FString fileName)
 {
-	UE_LOG(LogTemp,Warning,TEXT("SAVED DIRECTORY: %s"), *FPaths::ProjectSavedDir())
 	FString path = FPaths::ProjectSavedDir() + fileName + ".wdt";
 	std::string fullPath = TCHAR_TO_UTF8(*path);
 	std::ofstream out(fullPath);
