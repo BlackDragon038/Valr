@@ -49,6 +49,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float defaultDistanceBetweenPlayers = 350;
 
+	bool bCoinsIncreased = false;
+
+	int trainingTimer = 0;
+
+	uint8 randomAttackIndex = 0;
+	uint8 randomMovementIndex = 0;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -56,6 +63,8 @@ protected:
 	void processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector toP1, FVector toP2);
 
 	void testRoundStatus();
+
+	void CheckTrainingMode();
 
 	void calculateTimers(FVector toP1, FVector toP2);
 

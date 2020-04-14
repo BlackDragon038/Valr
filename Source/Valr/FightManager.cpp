@@ -8,7 +8,7 @@
 #include <Runtime/Engine/Classes/Engine/Engine.h>
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
-
+#include <ctime>
 #include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
@@ -32,6 +32,7 @@ void AFightManager::BeginPlay()
 	Instance = Cast<UFightingGameInstance>(GetGameInstance());
 	AddTickPrerequisiteActor(Player1);
 	AddTickPrerequisiteActor(Player2);
+	FMath::SRandInit(unsigned(time(0)));
 }
 
 void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector toP1, FVector toP2)
@@ -223,6 +224,51 @@ void AFightManager::testRoundStatus()
 	}
 }
 
+void AFightManager::CheckTrainingMode()
+{
+	if (Instance->GameMode == GAME_STATE::TRAINING)
+	{
+		if (trainingTimer < 200)
+		{
+			if (Player2->bRandomAttacks && FMath::RandRange(0,100) <= 33)
+			{
+				switch (randomAttackIndex)
+				{
+					case 0: Player2->PressedLight(); break;
+					case 1: Player2->PressedMedium(); break;
+					case 2: Player2->PressedHeavy(); break;
+				}
+			}
+			if (Player2->bRandomBlocking && FMath::RandRange(0,100) <= 33)
+			{
+				Player2->AxisBlock(1);
+			}
+			if (Player2->bRandomMovement && FMath::RandRange(0, 100) <= 33)
+			{
+				switch (randomMovementIndex)
+				{
+					case 0: Player2->AxisW(1); Player2->AxisA(0); Player2->AxisS(0); Player2->AxisD(0); break;
+					case 1: Player2->AxisW(1); Player2->AxisA(1); Player2->AxisS(0); Player2->AxisD(0); break;
+					case 2: Player2->AxisW(0); Player2->AxisA(1); Player2->AxisS(0); Player2->AxisD(0); break;
+					case 3: Player2->AxisW(0); Player2->AxisA(1); Player2->AxisS(1); Player2->AxisD(0); break;
+					case 4: Player2->AxisW(0); Player2->AxisA(0); Player2->AxisS(1); Player2->AxisD(0); break;
+					case 5: Player2->AxisW(0); Player2->AxisA(0); Player2->AxisS(1); Player2->AxisD(1); break;
+					case 6: Player2->AxisW(0); Player2->AxisA(0); Player2->AxisS(0); Player2->AxisD(1); break;
+					case 7: Player2->AxisW(1); Player2->AxisA(0); Player2->AxisS(0); Player2->AxisD(1); break;
+				}
+			}
+			trainingTimer++;
+		}
+		else 
+		{
+			if (Player2->State == STATE::BLOCKING) Player2->AxisBlock(0);
+			randomAttackIndex = FMath::RandRange(0, 2);
+			randomMovementIndex = FMath::RandRange(0, 7);
+			trainingTimer = 0;
+		}
+	}
+}
+
 void AFightManager::calculateTimers(FVector toP1, FVector toP2)
 {
 	if (Player1->Lives == 0)
@@ -237,8 +283,12 @@ void AFightManager::calculateTimers(FVector toP1, FVector toP2)
 		roundState = ROUND_STATE::MATCH_OVER_PLAYER1_WINS;
 		Player1->bDisableInput = true;
 		Player2->bDisableInput = true;
-		Instance->PlayerCoins += 100;
-		Instance->SavePlayerFile();
+		if (!bCoinsIncreased && (Instance->GameMode != GAME_STATE::TRAINING && Instance->GameMode != GAME_STATE::MULTIPLAYER))
+		{
+			Instance->PlayerCoins += 1000;
+			Instance->SavePlayerFile();
+			bCoinsIncreased = true;
+		}
 		return;
 	}
 	if (timeToStart == 0)
@@ -398,6 +448,7 @@ void AFightManager::Tick(float DeltaTime)
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Green, FString::Printf(TEXT("Player 1 CurrentPartsIndex: %i"), Player1->currentPartsIndex));
 	GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Red, FString::Printf(TEXT("Player 1 AttackType: %i"), Player1->attackType));*/
 
+	CheckTrainingMode();
 	calculateTimers(toPlayer1,toPlayer2);
 
 	Camera->SetActorLocation(FVector((Player1->GetActorLocation().X + Player2->GetActorLocation().X) * 0.5f, (Player1->GetActorLocation().Y + Player2->GetActorLocation().Y) * 0.5f, Player1->GetActorLocation().Z + Camera->Height));

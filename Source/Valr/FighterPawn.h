@@ -194,6 +194,16 @@ public:
 
 	bool bAllowParry = false;
 
+	//Training Variables
+	UPROPERTY(BlueprintReadWrite)
+		bool bRandomMovement = false;
+
+	UPROPERTY(BlueprintReadWrite)
+		bool bRandomAttacks = false;
+
+	UPROPERTY(BlueprintReadWrite)
+		bool bRandomBlocking = false;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
