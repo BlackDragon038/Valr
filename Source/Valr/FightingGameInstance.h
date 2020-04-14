@@ -56,6 +56,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Save Player File")
 		void SavePlayerFile();
+	
+	UFUNCTION(BlueprintCallable, Category = "Load Player File")
+		void LoadPlayerFile();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		GAME_STATE GameMode;
