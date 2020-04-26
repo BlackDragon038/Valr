@@ -63,9 +63,13 @@ public:
 	float minExploreRate = 0.01f;				//min chance value
 	float exploreDecay = 0.01f;					//chance decay amount for each update
 
-	float Timer = 0;							//timer to keep track of balancing
+	uint8 Timer = 0;							//timer to keep track of balancing
 	int holdMaxQIndex = 0;
 	int frameDelay = 0;
 	float recordedDistance = 0;
 	bool bTrain = true;
+
+	uint8 difficultyTimer = 0;
+	uint8 difficultyBlockChance = 0;
+
 };

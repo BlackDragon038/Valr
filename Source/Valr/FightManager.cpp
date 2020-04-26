@@ -291,7 +291,7 @@ void AFightManager::calculateTimers(FVector toP1, FVector toP2)
 		}
 		return;
 	}
-	if (timeToStart == 0)
+	if (timeToStart == 0 && Instance->GameMode != GAME_STATE::TRAINING)
 	{
 		roundTimer -= 1;
 	}

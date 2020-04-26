@@ -44,6 +44,9 @@ enum class GAME_STATE : uint8 { SINGLEPLAYER_STORY_MODE, SINGLEPLAYER_SINGLE_MAT
 UENUM(BlueprintType)
 enum class WARRIOR : uint8 { CRUSADER, VIKING, SAMURAI, KNIGHT, NINJA, SPARTAN, SOLDIER, JANISSARY};
 
+UENUM(BlueprintType)
+enum class DIFFICULTY : uint8 { EASY, NORMAL, HARD };
+
 UCLASS()
 class VALR_API UFightingGameInstance : public UGameInstance
 {
@@ -62,6 +65,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		GAME_STATE GameMode;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		DIFFICULTY Difficulty;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stage")
 		float maxDistanceFromCenter = 1000.f;
@@ -98,5 +104,4 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FCharacterColorData Janissary;
-
 };

@@ -44,6 +44,12 @@ void ACrusaderAIController::BeginPlay()
 		attackRange[i] = static_cast<float>(rangeAverage) / static_cast<float>(divider);
 	}
 	averageRange = (attackRange[0] + attackRange[1] + attackRange[2]) / 3.f;
+	switch (Manager->Instance->Difficulty)
+	{
+		case DIFFICULTY::EASY: difficultyTimer = 20; difficultyBlockChance = 30; break;
+		case DIFFICULTY::NORMAL: difficultyTimer = 15; difficultyBlockChance = 50; break;
+		case DIFFICULTY::HARD: difficultyTimer = 10; difficultyBlockChance = 80; break;
+	}
 	//std::string path = TCHAR_TO_UTF8(*(FPaths::ProjectSavedDir() + "model_Crusader_BP_C_1_snapshot_4-49-0.wdt"));
 	//Network->LoadWeights(path.c_str());
 }
@@ -82,13 +88,13 @@ void ACrusaderAIController::Tick(float DeltaTime)
 
 		if (FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()) > averageRange * 1.15f)
 		{
-			if (FMath::RandRange(0, 100) < 40 && Fighter->Health < 60)
+			if (FMath::RandRange(0, 100) < 40 && Fighter->Health < 60 && Fighter->specialMeter > 0)
 			{
 				if (Timer == 0)
 				{
 					maxQIndex = 11;
 					holdMaxQIndex = 11;
-					Timer = 15;
+					Timer = difficultyTimer;
 				}
 				else if (Timer > 0)
 				{
@@ -102,7 +108,7 @@ void ACrusaderAIController::Tick(float DeltaTime)
 				{
 					maxQIndex = BiasRand(movementArr, 47);
 						holdMaxQIndex = maxQIndex;
-					if (holdMaxQIndex != 8 && holdMaxQIndex != 9 && holdMaxQIndex != 10) Timer = 15;
+					if (holdMaxQIndex != 8 && holdMaxQIndex != 9 && holdMaxQIndex != 10) Timer = difficultyTimer;
 				}
 				else if (Timer > 0)
 				{
@@ -114,15 +120,15 @@ void ACrusaderAIController::Tick(float DeltaTime)
 		else
 		{
 			int blockChance = 0;
-			if (Manager->Player1->State == STATE::ATTACKING) blockChance = 20;
-			else blockChance = 40;
+			if (Manager->Player1->State == STATE::ATTACKING) blockChance = difficultyBlockChance;
+			else blockChance = difficultyBlockChance/2;
 			if (FMath::RandRange(0, 100) < blockChance || (Timer > 0 && holdMaxQIndex == 12))
 			{
 				if (Timer == 0)
 				{
 					maxQIndex = 12;
 					holdMaxQIndex = 12;
-					Timer = 15;
+					Timer = difficultyTimer;
 				}
 				else if (Timer > 0)
 				{
@@ -136,7 +142,7 @@ void ACrusaderAIController::Tick(float DeltaTime)
 				{
 					maxQIndex = BiasRand(attackArr, 4);
 					holdMaxQIndex = maxQIndex;
-					if (holdMaxQIndex != 8 && holdMaxQIndex != 9 && holdMaxQIndex != 10) Timer = 15;
+					if (holdMaxQIndex != 8 && holdMaxQIndex != 9 && holdMaxQIndex != 10) Timer = difficultyTimer;
 				}
 				else if (Timer > 0)
 				{
