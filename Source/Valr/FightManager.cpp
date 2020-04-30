@@ -320,7 +320,7 @@ void AFightManager::calculateTimers(FVector toP1, FVector toP2)
 				Player2->Reset();
 			}
 			if (Player1->GetActorLocation().Size() > Instance->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2) || Player2->GetActorLocation().Size() > Instance->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2) ||
-				(Player1->GetActorLocation() - Player2->GetActorLocation()).Size() > defaultDistanceBetweenPlayers + Player2->MovementSpeed)
+				(Player1->GetActorLocation() - Player2->GetActorLocation()).Size() > defaultDistanceBetweenPlayers + Player2->MovementSpeed || (Player2->GetActorLocation() + (toP2 * defaultDistanceBetweenPlayers)).Size() >= Instance->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2))
 			{
 				Camera->SpringArm->TargetArmLength = Camera->initialCameraDistance;
 				Player1->SetActorLocation(FVector(-(defaultDistanceBetweenPlayers / 2), 0, 0));
@@ -337,6 +337,7 @@ void AFightManager::calculateTimers(FVector toP1, FVector toP2)
 				{
 					Player2->LEFT_Key = false;
 					Player2->State = STATE::IDLE;
+					Player2->SetActorRotation(Player1->GetActorLocation().Rotation());
 				}
 			}
 		}
@@ -349,7 +350,7 @@ void AFightManager::calculateTimers(FVector toP1, FVector toP2)
 				Player1->Reset();
 			}
 			if (Player1->GetActorLocation().Size() > Instance->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2) || Player2->GetActorLocation().Size() > Instance->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2) ||
-				(Player1->GetActorLocation() - Player2->GetActorLocation()).Size() > defaultDistanceBetweenPlayers + Player1->MovementSpeed)
+				(Player1->GetActorLocation() - Player2->GetActorLocation()).Size() > defaultDistanceBetweenPlayers + Player1->MovementSpeed || (Player1->GetActorLocation() + (toP1 * defaultDistanceBetweenPlayers)).Size() >= Instance->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2))
 			{
 				Camera->SpringArm->TargetArmLength = Camera->initialCameraDistance;
 				Player1->SetActorLocation(FVector(-(defaultDistanceBetweenPlayers / 2), 0, 0));
@@ -366,20 +367,21 @@ void AFightManager::calculateTimers(FVector toP1, FVector toP2)
 				{
 					Player1->LEFT_Key = false;
 					Player1->State = STATE::IDLE;
+					Player1->SetActorRotation(Player2->GetActorLocation().Rotation());
 				}
 			}
 		}
 		else if (roundState == ROUND_STATE::ROUND_DRAW)
 		{
-			if (Camera->SpringArm->TargetArmLength != Camera->initialCameraDistance)
+			if (timeToStart == 60)
 			{
 				Camera->SpringArm->TargetArmLength = Camera->initialCameraDistance;
 				Player1->Reset();
 				Player2->Reset();
 				Player1->SetActorLocation(FVector(-(defaultDistanceBetweenPlayers / 2), 0, 0));
 				Player2->SetActorLocation(FVector((defaultDistanceBetweenPlayers / 2), 0, 0));
-				Player1->SetActorRotation(Player2->GetActorLocation().Rotation());
-				Player2->SetActorRotation(Player1->GetActorLocation().Rotation());
+				Player1->SetActorRotation(toP2.Rotation());
+				Player2->SetActorRotation(toP1.Rotation());
 			}
 		}
 		Camera->SetActorLocation(FVector(MiddleVector.X, MiddleVector.Y, MiddleVector.Z + Camera->Height));
@@ -491,19 +493,20 @@ void AFightManager::Tick(float DeltaTime)
 void AFightManager::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	PlayerInputComponent->BindAxis("Player1_W", Player1, &AFighterPawn::AxisW);
-	PlayerInputComponent->BindAxis("Player1_A", Player1, &AFighterPawn::AxisA);
-	PlayerInputComponent->BindAxis("Player1_S", Player1, &AFighterPawn::AxisS);
-	PlayerInputComponent->BindAxis("Player1_D", Player1, &AFighterPawn::AxisD);
-	PlayerInputComponent->BindAction("Player1_Light", IE_Pressed, Player1, &AFighterPawn::PressedLight);
-	PlayerInputComponent->BindAction("Player1_Medium", IE_Pressed, Player1, &AFighterPawn::PressedMedium);
-	PlayerInputComponent->BindAction("Player1_Heavy", IE_Pressed, Player1, &AFighterPawn::PressedHeavy);
-	PlayerInputComponent->BindAction("Player1_Special", IE_Pressed, Player1, &AFighterPawn::PressedSpecial);
-	PlayerInputComponent->BindAction("Player1_Special", IE_Released, Player1, &AFighterPawn::ReleasedSpecial);
-	PlayerInputComponent->BindAxis("Player1_Block", Player1, &AFighterPawn::AxisBlock);
 
 	if (Instance->GameMode == GAME_STATE::MULTIPLAYER)
 	{
+		PlayerInputComponent->BindAxis("Player1_W", Player1, &AFighterPawn::AxisW);
+		PlayerInputComponent->BindAxis("Player1_A", Player1, &AFighterPawn::AxisA);
+		PlayerInputComponent->BindAxis("Player1_S", Player1, &AFighterPawn::AxisS);
+		PlayerInputComponent->BindAxis("Player1_D", Player1, &AFighterPawn::AxisD);
+		PlayerInputComponent->BindAction("Player1_Light", IE_Pressed, Player1, &AFighterPawn::PressedLight);
+		PlayerInputComponent->BindAction("Player1_Medium", IE_Pressed, Player1, &AFighterPawn::PressedMedium);
+		PlayerInputComponent->BindAction("Player1_Heavy", IE_Pressed, Player1, &AFighterPawn::PressedHeavy);
+		PlayerInputComponent->BindAction("Player1_Special", IE_Pressed, Player1, &AFighterPawn::PressedSpecial);
+		PlayerInputComponent->BindAction("Player1_Special", IE_Released, Player1, &AFighterPawn::ReleasedSpecial);
+		PlayerInputComponent->BindAxis("Player1_Block", Player1, &AFighterPawn::AxisBlock);
+
 		PlayerInputComponent->BindAxis("Player2_W", Player2, &AFighterPawn::AxisS);
 		PlayerInputComponent->BindAxis("Player2_A", Player2, &AFighterPawn::AxisD);
 		PlayerInputComponent->BindAxis("Player2_S", Player2, &AFighterPawn::AxisW);
@@ -514,5 +517,18 @@ void AFightManager::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		PlayerInputComponent->BindAction("Player2_Special", IE_Pressed, Player2, &AFighterPawn::PressedSpecial);
 		PlayerInputComponent->BindAction("Player2_Special", IE_Released, Player2, &AFighterPawn::ReleasedSpecial);
 		PlayerInputComponent->BindAxis("Player2_Block", Player2, &AFighterPawn::AxisBlock);
+	}
+	else
+	{
+		PlayerInputComponent->BindAxis("Player1_W", Player1, &AFighterPawn::AxisW);
+		PlayerInputComponent->BindAxis("Player1_A", Player1, &AFighterPawn::AxisA);
+		PlayerInputComponent->BindAxis("Player1_S", Player1, &AFighterPawn::AxisS);
+		PlayerInputComponent->BindAxis("Player1_D", Player1, &AFighterPawn::AxisD);
+		PlayerInputComponent->BindAction("Player1_Light_SP", IE_Pressed, Player1, &AFighterPawn::PressedLight);
+		PlayerInputComponent->BindAction("Player1_Medium_SP", IE_Pressed, Player1, &AFighterPawn::PressedMedium);
+		PlayerInputComponent->BindAction("Player1_Heavy_SP", IE_Pressed, Player1, &AFighterPawn::PressedHeavy);
+		PlayerInputComponent->BindAction("Player1_Special_SP", IE_Pressed, Player1, &AFighterPawn::PressedSpecial);
+		PlayerInputComponent->BindAction("Player1_Special_SP", IE_Released, Player1, &AFighterPawn::ReleasedSpecial);
+		PlayerInputComponent->BindAxis("Player1_Block_SP", Player1, &AFighterPawn::AxisBlock);
 	}
 }

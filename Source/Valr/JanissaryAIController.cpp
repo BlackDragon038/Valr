@@ -261,7 +261,7 @@ void AJanissaryAIController::Tick(float DeltaTime)
 			//UE_LOG(LogTemp, Warning, TEXT("%i ... NOTHING HAPPENED ... %d"), maxQIndex, Fighter->State)
 		}
 
-		Replay* lastMemory = new Replay(
+		ArtificialNN::Replay* lastMemory = new ArtificialNN::Replay(
 			static_cast<double>(Fighter->Health),
 			static_cast<double>(Fighter->Stamina),
 			FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()),

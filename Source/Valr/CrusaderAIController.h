@@ -10,23 +10,6 @@
 
 #include "CrusaderAIController.generated.h"
 
-class Replay
-{
-public:
-	TArray<double> States;	//Save this
-	double Reward = 0;
-
-	Replay(double s1, double s2, double s3, double s4, double s5, double s6, float r)
-	{
-		States.Add(s1);
-		States.Add(s2);
-		States.Add(s3);
-		States.Add(s4);
-		States.Add(s5);
-		States.Add(s6);
-		Reward = r;
-	}
-};
 /**
  * 
  */
@@ -36,7 +19,7 @@ class VALR_API ACrusaderAIController : public AAIController
 	GENERATED_BODY()
 public:
 
-	TArray<Replay*> replayMemory;
+	TArray<ArtificialNN::Replay*> replayMemory;
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"), BlueprintReadWrite)
 		AFightManager* Manager = nullptr;
