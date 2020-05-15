@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-
+#include "Sound/SoundWave.h"
 #include "Camera.h"
 #include "FighterPawn.h"
 
@@ -33,6 +33,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		ACamera* Camera = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<USoundWave*> HitSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		USoundWave* BlockSound = nullptr;
 
 	UPROPERTY(BlueprintReadOnly)
 		int32 roundTimer = 3600;

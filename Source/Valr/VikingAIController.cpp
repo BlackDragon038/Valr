@@ -30,7 +30,7 @@ void AVikingAIController::BeginPlay()
 {
 	Super::BeginPlay();
 	Fighter = Cast<AViking>(GetOwner());
-	Network = new ArtificialNN(6, 13, 3, 15, 0.9f);
+	Network = new ArtificialNN(7, 13, 5, 15, 1);
 	FMath::SRandInit(unsigned(time(0)));
 
 	for (int i{ 0 }; i < 3; i++)
@@ -44,14 +44,14 @@ void AVikingAIController::BeginPlay()
 		attackRange[i] = static_cast<float>(rangeAverage) / static_cast<float>(divider);
 	}
 	averageRange = (attackRange[0] + attackRange[1] + attackRange[2]) / 3.f;
+	std::string path;
 	switch (Manager->Instance->Difficulty)
 	{
-		case DIFFICULTY::EASY: difficultyTimer = 20; difficultyBlockChance = 30; break;
-		case DIFFICULTY::NORMAL: difficultyTimer = 15; difficultyBlockChance = 50; break;
-		case DIFFICULTY::HARD: difficultyTimer = 10; difficultyBlockChance = 80; break;
+	case DIFFICULTY::EASY: difficultyTimer = 35; difficultyBlockChance = 20; path = TCHAR_TO_UTF8(*(FPaths::ProjectSavedDir() + "model_Viking_EASY.wdt")); break;
+	case DIFFICULTY::NORMAL: difficultyTimer = 25; difficultyBlockChance = 35; path = TCHAR_TO_UTF8(*(FPaths::ProjectSavedDir() + "model_Viking_NORMAL.wdt")); break;
+	case DIFFICULTY::HARD: difficultyTimer = 15; difficultyBlockChance = 50; path = TCHAR_TO_UTF8(*(FPaths::ProjectSavedDir() + "model_Viking_HARD.wdt")); break;
 	}
-	//std::string path = TCHAR_TO_UTF8(*(FPaths::ProjectSavedDir() + "model_Crusader_BP_C_1_snapshot_4-49-0.wdt"));
-	//Network->LoadWeights(path.c_str());
+	Network->LoadWeights(path.c_str());
 }
 
 void AVikingAIController::Tick(float DeltaTime)
@@ -75,6 +75,7 @@ void AVikingAIController::Tick(float DeltaTime)
 	states.Add(static_cast<double>(Fighter->State));
 	states.Add(static_cast<double>(Fighter->attackType));
 	states.Add(static_cast<double>(AFightManager::Angle(Fighter->GetActorForwardVector(), (Manager->Player1->GetActorLocation() - Fighter->GetActorLocation()).GetSafeNormal())));
+	states.Add(static_cast<double>(Manager->Player1->State));
 
 	qs = SoftMax(Network->CalcOutput(states));
 	double maxQ = FMath::Max(qs);
@@ -84,9 +85,10 @@ void AVikingAIController::Tick(float DeltaTime)
 	{
 		exploreRate = FMath::Clamp(exploreRate - exploreDecay, minExploreRate, maxExploreRate);
 		int movementArr[] = { 0,0,0,0,0,0,0,0,0,0,1,1,2,2,2,2,2,2,2,2,2,2,3,3,4,4,4,4,4,4,4,4,4,4,5,5,6,6,6,6,6,6,6,6,6,6,7,7 };
-		int attackArr[] = { 0,4,8,9,10 };
-
-		if (FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()) > averageRange * 1.15f)
+		int attackArr[] = { 8,9,10 };
+		FVector Dir = Manager->Player1->GetActorLocation() - Fighter->GetActorLocation();
+		Dir.Normalize();
+		if (FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()) > averageRange * 1.15f || AFightManager::Angle(Fighter->GetActorForwardVector(), Dir) > 70)
 		{
 			if (FMath::RandRange(0, 100) < exploreRate && Timer == 0)
 			{
@@ -103,15 +105,32 @@ void AVikingAIController::Tick(float DeltaTime)
 		else
 		{
 			int blockChance = 0;
-			if (Manager->Player1->State == STATE::ATTACKING) blockChance = difficultyBlockChance;
-			else blockChance = difficultyBlockChance/2;
-			if (FMath::RandRange(0, 100) < blockChance || (Timer > 0 && holdMaxQIndex == 12))
+			if (Manager->Player1->State == STATE::ATTACKING)
+				blockChance = difficultyBlockChance;
+			else blockChance = difficultyBlockChance / 2.5;
+			if ((FMath::RandRange(0, 100) < blockChance) || (Timer > 0 && holdMaxQIndex == 12))
 			{
 				if (Timer == 0)
 				{
 					maxQIndex = 12;
 					holdMaxQIndex = 12;
-					Timer = difficultyTimer;
+					if (Manager->Player1->State == STATE::ATTACKING)
+					{
+						Timer = Manager->Player1->Attacks[static_cast<uint8>(Manager->Player1->attackType)].AttackTotalFrameCount;
+					}
+					else
+					{
+						switch (Manager->Instance->Difficulty)
+						{
+						case DIFFICULTY::EASY: Timer = 15; break;
+						case DIFFICULTY::NORMAL: Timer = 20; break;
+						case DIFFICULTY::HARD: Timer = 25; break;
+						}
+					}
+				}
+				if (Manager->Player1->State == STATE::STUNNED && holdMaxQIndex == 12 && Timer > Timer / 2)
+				{
+					Timer -= FMath::Clamp(Timer / 2, 0, 25);
 				}
 				else if (Timer > 0)
 				{
@@ -132,7 +151,21 @@ void AVikingAIController::Tick(float DeltaTime)
 				{
 					if (FMath::RandRange(0, 100) < exploreRate && Timer == 0)
 					{
-						maxQIndex = BiasRand(attackArr, 4);
+						int attackChance = 0;
+						switch (Manager->Instance->Difficulty)
+						{
+						case DIFFICULTY::EASY: attackChance = 30; break;
+						case DIFFICULTY::NORMAL: attackChance = 50; break;
+						case DIFFICULTY::HARD: attackChance = 70; break;
+						}
+						if (Fighter->Stamina > Fighter->Attacks[2].staminaCost && FMath::RandRange(0, 100) < attackChance)
+						{
+							maxQIndex = BiasRand(attackArr, 2);
+						}
+						else
+						{
+							maxQIndex = BiasRand(movementArr, 47);
+						}
 						holdMaxQIndex = maxQIndex;
 						if (holdMaxQIndex != 8 && holdMaxQIndex != 9 && holdMaxQIndex != 10) Timer = difficultyTimer;
 					}
@@ -180,7 +213,9 @@ void AVikingAIController::Tick(float DeltaTime)
 			}
 			else
 			{
-				if (AFightManager::Angle(Fighter->GetActorForwardVector(), (Manager->Player1->GetActorLocation() - Fighter->GetActorLocation()).GetSafeNormal()) < 90)
+				FVector Dir = Manager->Player1->GetActorLocation() - Fighter->GetActorLocation();
+				Dir.Normalize();
+				if (AFightManager::Angle(Fighter->GetActorForwardVector(), Dir) < 70)
 				{
 					currentReward = 1.0f;
 				}
@@ -192,25 +227,22 @@ void AVikingAIController::Tick(float DeltaTime)
 		{
 			if (FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()) > recordedDistance)
 			{
-				currentReward = -1.0f;
+				currentReward = -0.1f;
 				//UE_LOG(LogTemp, Warning, TEXT("%i ... AI is fleeing away!... distance: %f"), maxQIndex, currentDistance)
 			}
-			else if (FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()) < recordedDistance && FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()) < 85)
+			else if (FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()) < 120)
 			{
-				currentReward = 0.75f;
-				//UE_LOG(LogTemp, Warning, TEXT("%i ... AI is too close to player!... distance : %f"), maxQIndex, currentDistance)
-			}
-			else if (FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()) < 85)
-			{
-				currentReward = -1.0f;
+				currentReward = -0.1f;
 			}
 			else if (FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()) < recordedDistance)
 			{
-				if (AFightManager::Angle(Fighter->GetActorForwardVector(), (Manager->Player1->GetActorLocation() - Fighter->GetActorLocation()).GetSafeNormal()) < 90)
+				FVector Dir = Manager->Player1->GetActorLocation() - Fighter->GetActorLocation();
+				Dir.Normalize();
+				if (AFightManager::Angle(Fighter->GetActorForwardVector(), Dir) < 70)
 				{
-					currentReward = 0.5f;
+					currentReward = 0.05f;
 				}
-				else currentReward = -1.0f;
+				else currentReward = -0.1f;
 			}
 		}
 		else if (Fighter->State == STATE::STUNNED)
@@ -220,21 +252,17 @@ void AVikingAIController::Tick(float DeltaTime)
 		}
 		else if (Fighter->State == STATE::BLOCKING)
 		{
-			if (Manager->Player1->State == STATE::STUNNED)
-			{
-				currentReward = 1.0f;
-			}
-			else if (Manager->Player1->State == STATE::ATTACKING)
+			if (Manager->Player1->State == STATE::ATTACKING)
 			{
 				currentReward = 1.0f;
 			}
 			if (FVector::Distance(Fighter->GetActorLocation(), Manager->Player1->GetActorLocation()) < Fighter->BlockData.maxDist)
 			{
-				currentReward = 0.5f;
+				currentReward = 0.25f;
 			}
 			else
 			{
-				currentReward = -0.5f;
+				currentReward = -1.0f;
 			}
 		}
 		else if (Fighter->State == STATE::STEPPING)
@@ -268,6 +296,7 @@ void AVikingAIController::Tick(float DeltaTime)
 			static_cast<double>(Fighter->State),
 			static_cast<double>(Fighter->attackType),
 			static_cast<double>(AFightManager::Angle(Fighter->GetActorForwardVector(), (Manager->Player1->GetActorLocation() - Fighter->GetActorLocation()).GetSafeNormal())),
+			static_cast<double>(Manager->Player1->State),
 			currentReward);
 
 		if (replayMemory.Num() > 5000)
@@ -326,9 +355,14 @@ void AVikingAIController::Tick(float DeltaTime)
 	if (bTrain)
 	{
 		FDateTime time;
-		if (exploreRate <= 1 && time.GetSecond() == 0)
+		if (exploreRate <= minExploreRate + 1 && time.GetSecond() == 0)
 		{
-			Network->SaveWeights("model_" + Fighter->GetName() + "_snapshot_" + FString::FromInt(time.GetHour()) + "-" + FString::FromInt(time.GetMinute()) + "-" + FString::FromInt(time.GetSecond()));
+			switch (Manager->Instance->Difficulty)
+			{
+			case DIFFICULTY::EASY: Network->SaveWeights("model_" + Fighter->GetName() + "_EASY"); break;
+			case DIFFICULTY::NORMAL: Network->SaveWeights("model_" + Fighter->GetName() + "_NORMAL"); break;
+			case DIFFICULTY::HARD: Network->SaveWeights("model_" + Fighter->GetName() + "_HARD"); break;
+			}
 		}
 	}
 }

@@ -41,7 +41,7 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 	if (P1->State == STATE::MOVING || P1->State == STATE::STEPPING)
 	{
 		P1->SetActorRotation(FMath::Lerp(P1->GetActorRotation(), toP2.Rotation(), ((float)Player1->turnSpeed / 100.f)));
-		if (PlayerDistance < 50)
+		if (PlayerDistance < 100)
 			if (P1->State == STATE::STEPPING)
 				P1->SetActorLocation(P1->GetActorLocation() + toP1 * ((float)P1->steppingSpeed * P1->sideStepSpeed / 100.f));
 			else P1->SetActorLocation(P1->GetActorLocation() + toP1 * P1->MovementSpeed);
@@ -83,14 +83,16 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 				(P1->GetActorLocation() - P2->GetActorLocation()).Size() > P2->BlockData.minDist &&
 				(P1->GetActorLocation() - P2->GetActorLocation()).Size() < P2->BlockData.maxDist && !P1->Attacks[static_cast<uint8>(P1->attackType)].bUnblockableAttack && P2->bAllowParry)
 			{
+				UGameplayStatics::PlaySound2D(GetWorld(), BlockSound, 1.f, FMath::FRandRange(0.75, 1.5));
 				uint8 specialCharge = P1->Attacks[static_cast<uint8>(P1->attackType)].Damage* P2->specialChargeMultiplier;
 				if (P2->specialMeter <= 255-specialCharge) P2->specialMeter += specialCharge;
 				else P2->specialMeter = 255;
 				P1->State = STATE::STUNNED;
 				P2->bAllowParry = false;
+				GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(Camera->CameraShake, static_cast<float>(P2->BlockData.blockStunRate) * 0.1f);
 				P1->currentFrameOfAttack = P2->BlockData.blockStunRate;
 				P1->stunPush = P2->BlockData.blockPushPower;
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), P1->hitParticle, { FRotator(),FVector(P2->GetActorLocation() + FVector(0, 0, 120) + toP1 * (PlayerDistance/2)),FVector(0.25,0.25,0.25) });
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), P2->hitParticle, { FRotator(),FVector(P2->GetActorLocation() + FVector(0, 0, 120) + toP1 * (PlayerDistance/2)),FVector(0.25,0.25,0.25) });
 			}
 			else
 			{
@@ -98,7 +100,7 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 				{
 					if (P2->Health > P1->Attacks[static_cast<uint8>(P1->attackType)].Damage) P2->Health -= P1->Attacks[static_cast<uint8>(P1->attackType)].Damage;
 					else P2->Health = 0;
-
+					GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(Camera->CameraShake, static_cast<float>(P1->Attacks[static_cast<uint8>(P1->attackType)].Damage) * 0.1f);
 					P2->steppingSpeed = 0;
 					P2->steppingFrameTime = 0;
 					P2->bDoubleTapW = false;
@@ -109,21 +111,21 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 					P2->KeyA = AFighterPawn::KEY_STATE::RESET;
 					P2->KeyS = AFighterPawn::KEY_STATE::RESET;
 					P2->KeyD = AFighterPawn::KEY_STATE::RESET;
-
+					UGameplayStatics::PlaySound2D(GetWorld(), HitSound[FMath::RandRange(0,2)],1.f,FMath::FRandRange(0.75,1.5));
 					if (!P2->bNonStunnable)
 					{
 						P2->State = STATE::STUNNED;
 						P2->currentFrameOfAttack = P1->Attacks[static_cast<uint8>(P1->attackType)].StunRate;
 						P2->stunPush = P1->Attacks[static_cast<uint8>(P1->attackType)].StunPushPower;
 					}
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), P2->hitParticle, { FRotator(),FVector(P2->GetActorLocation() + FVector(0, 0, 120) + toP1 * (PlayerDistance * 0.25)),FVector(0.25,0.25,0.25) });
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), P1->hitParticle, { FRotator(),FVector(P2->GetActorLocation() + FVector(0, 0, 120) + toP1 * (PlayerDistance * 0.25)),FVector(0.25,0.25,0.25) });
 					P1->bOpponentIsHit = true;
 					uint8 specialCharge = P1->Attacks[static_cast<uint8>(P1->attackType)].Damage* P2->specialChargeMultiplier;
 					if (P2->specialMeter <= 255-specialCharge) P2->specialMeter += specialCharge;
 					else P2->specialMeter = 255;
 				}
 				P1->currentFrameOfAttack++;
-				if (PlayerDistance > 50 && P1->GetActorLocation().Size() < Instance->maxDistanceFromCenter - ((P1->Attacks[static_cast<uint8>(P1->attackType)].AttackTotalFrameCount - P1->currentFrameOfAttack) * P1->Attacks[static_cast<uint8>(P1->attackType)].attackPush))
+				if (PlayerDistance > 100 && P1->GetActorLocation().Size() < Instance->maxDistanceFromCenter - ((P1->Attacks[static_cast<uint8>(P1->attackType)].AttackTotalFrameCount - P1->currentFrameOfAttack) * P1->Attacks[static_cast<uint8>(P1->attackType)].attackPush))
 					P1->SetActorLocation(P1->GetActorLocation() + (P1->GetActorForwardVector() * 
 					((P1->Attacks[static_cast<uint8>(P1->attackType)].AttackTotalFrameCount - P1->currentFrameOfAttack) * P1->Attacks[static_cast<uint8>(P1->attackType)].attackPush)));
 			}
@@ -132,7 +134,7 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 		{
 			if (P1->currentFrameOfAttack > 0) P1->bResetAnimation = false;
 			P1->currentFrameOfAttack++;
-			if (PlayerDistance > 50 && P1->GetActorLocation().Size() < Instance->maxDistanceFromCenter - ((P1->Attacks[static_cast<uint8>(P1->attackType)].AttackTotalFrameCount - P1->currentFrameOfAttack) * P1->Attacks[static_cast<uint8>(P1->attackType)].attackPush))
+			if (PlayerDistance > 100 && P1->GetActorLocation().Size() < Instance->maxDistanceFromCenter - ((P1->Attacks[static_cast<uint8>(P1->attackType)].AttackTotalFrameCount - P1->currentFrameOfAttack) * P1->Attacks[static_cast<uint8>(P1->attackType)].attackPush))
 				P1->SetActorLocation(P1->GetActorLocation() + (P1->GetActorForwardVector() *
 				((P1->Attacks[static_cast<uint8>(P1->attackType)].AttackTotalFrameCount - P1->currentFrameOfAttack) * P1->Attacks[static_cast<uint8>(P1->attackType)].attackPush)));
 		}
@@ -228,7 +230,7 @@ void AFightManager::CheckTrainingMode()
 {
 	if (Instance->GameMode == GAME_STATE::TRAINING)
 	{
-		if (trainingTimer < 200)
+		if (trainingTimer < 300)
 		{
 			if (Player2->bRandomAttacks && FMath::RandRange(0,100) <= 33)
 			{
@@ -320,7 +322,7 @@ void AFightManager::calculateTimers(FVector toP1, FVector toP2)
 				Player2->Reset();
 			}
 			if (Player1->GetActorLocation().Size() > Instance->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2) || Player2->GetActorLocation().Size() > Instance->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2) ||
-				(Player1->GetActorLocation() - Player2->GetActorLocation()).Size() > defaultDistanceBetweenPlayers + Player2->MovementSpeed || (Player2->GetActorLocation() + (toP2 * defaultDistanceBetweenPlayers)).Size() >= Instance->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2))
+				(Player1->GetActorLocation() - Player2->GetActorLocation()).Size() > defaultDistanceBetweenPlayers + Player2->MovementSpeed)
 			{
 				Camera->SpringArm->TargetArmLength = Camera->initialCameraDistance;
 				Player1->SetActorLocation(FVector(-(defaultDistanceBetweenPlayers / 2), 0, 0));
@@ -337,7 +339,6 @@ void AFightManager::calculateTimers(FVector toP1, FVector toP2)
 				{
 					Player2->LEFT_Key = false;
 					Player2->State = STATE::IDLE;
-					Player2->SetActorRotation(Player1->GetActorLocation().Rotation());
 				}
 			}
 		}
@@ -350,7 +351,7 @@ void AFightManager::calculateTimers(FVector toP1, FVector toP2)
 				Player1->Reset();
 			}
 			if (Player1->GetActorLocation().Size() > Instance->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2) || Player2->GetActorLocation().Size() > Instance->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2) ||
-				(Player1->GetActorLocation() - Player2->GetActorLocation()).Size() > defaultDistanceBetweenPlayers + Player1->MovementSpeed || (Player1->GetActorLocation() + (toP1 * defaultDistanceBetweenPlayers)).Size() >= Instance->maxDistanceFromCenter - (defaultDistanceBetweenPlayers / 2))
+				(Player1->GetActorLocation() - Player2->GetActorLocation()).Size() > defaultDistanceBetweenPlayers + Player1->MovementSpeed)
 			{
 				Camera->SpringArm->TargetArmLength = Camera->initialCameraDistance;
 				Player1->SetActorLocation(FVector(-(defaultDistanceBetweenPlayers / 2), 0, 0));
@@ -367,7 +368,6 @@ void AFightManager::calculateTimers(FVector toP1, FVector toP2)
 				{
 					Player1->LEFT_Key = false;
 					Player1->State = STATE::IDLE;
-					Player1->SetActorRotation(Player2->GetActorLocation().Rotation());
 				}
 			}
 		}

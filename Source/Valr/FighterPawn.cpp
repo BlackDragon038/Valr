@@ -99,25 +99,25 @@ void AFighterPawn::testSideStep()
 			{
 				steppingSpeed = sideStepFrameTime;
 				bDoubleTapW = true;
-				Stamina -= 100;
+				Stamina -= 50;
 			}
 			if (KeyA == KEY_STATE::PRESSED_TWICE && !bDoubleTapA)
 			{
 				steppingSpeed = sideStepFrameTime;
 				bDoubleTapA = true;
-				Stamina -= 100;
+				Stamina -= 50;
 			}
 			if (KeyS == KEY_STATE::PRESSED_TWICE && !bDoubleTapS)
 			{
 				steppingSpeed = sideStepFrameTime;
 				bDoubleTapS = true;
-				Stamina -= 100;
+				Stamina -= 50;
 			}
 			if (KeyD == KEY_STATE::PRESSED_TWICE && !bDoubleTapD)
 			{
 				steppingSpeed = sideStepFrameTime;
 				bDoubleTapD = true;
-				Stamina -= 100;
+				Stamina -= 50;
 			}
 		}
 		else
@@ -663,11 +663,13 @@ void AFighterPawn::AxisBlock(float Axis)
 				{
 					if (Manager->Player2->State == STATE::ATTACKING)
 						bAllowParry = true;
+					else bAllowParry = false;
 				}
 				else if (Manager->Player2 == this)
 				{
 					if (Manager->Player1->State == STATE::ATTACKING)
 						bAllowParry = true;
+					else bAllowParry = false;
 				}
 			}
 			InputID = INPUT::BLOCK;

@@ -5,6 +5,7 @@
 #include "Runtime/Engine/Classes/Camera/CameraComponent.h"
 #include "Runtime/Engine/Classes/GameFramework/SpringArmComponent.h"
 #include "FighterPawn.h"
+#include "Camera/CameraShake.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -33,6 +34,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float initialCameraDistance = 1000;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UCameraShake> CameraShake;
 
 protected:
 	// Called when the game starts or when spawned

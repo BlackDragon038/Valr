@@ -44,12 +44,12 @@ public:
 	float averageRange = 0;
 
 	float Discount = 0.99f;						//how much future states affect rewards
-	float exploreRate = 100.f;					//chance of picking random action
+	float exploreRate = 15.f;					//chance of picking random action
 	float maxExploreRate = 100.0f;				//max chance value
-	float minExploreRate = 0.01f;				//min chance value
-	float exploreDecay = 0.01f;					//chance decay amount for each update
+	float minExploreRate = 15.0f;				//min chance value
+	float exploreDecay = 0.005f;					//chance decay amount for each update
 
-	float Timer = 0;							//timer to keep track of balancing
+	int Timer = 0;							//timer to keep track of balancing
 	int holdMaxQIndex = 0;
 	int frameDelay = 0;
 	float recordedDistance = 0;
