@@ -47,9 +47,9 @@ void AJanissaryAIController::BeginPlay()
 	std::string path;
 	switch (Manager->Instance->Difficulty)
 	{
-	case DIFFICULTY::EASY: difficultyTimer = 35; difficultyBlockChance = 20; path = TCHAR_TO_UTF8(*(FPaths::ProjectSavedDir() + "model_Janissary_EASY.wdt")); break;
-	case DIFFICULTY::NORMAL: difficultyTimer = 25; difficultyBlockChance = 35; path = TCHAR_TO_UTF8(*(FPaths::ProjectSavedDir() + "model_Janissary_NORMAL.wdt")); break;
-	case DIFFICULTY::HARD: difficultyTimer = 15; difficultyBlockChance = 50; path = TCHAR_TO_UTF8(*(FPaths::ProjectSavedDir() + "model_Janissary_HARD.wdt")); break;
+	case DIFFICULTY::EASY: difficultyTimer = 35; difficultyBlockChance = 20; path = TCHAR_TO_UTF8(*(FPaths::ProjectContentDir() + "model_Janissary_EASY.wdt")); break;
+	case DIFFICULTY::NORMAL: difficultyTimer = 25; difficultyBlockChance = 35; path = TCHAR_TO_UTF8(*(FPaths::ProjectContentDir() + "model_Janissary_NORMAL.wdt")); break;
+	case DIFFICULTY::HARD: difficultyTimer = 15; difficultyBlockChance = 50; path = TCHAR_TO_UTF8(*(FPaths::ProjectContentDir() + "model_Janissary_HARD.wdt")); break;
 	}
 	Network->LoadWeights(path.c_str());
 }

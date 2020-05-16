@@ -15,7 +15,7 @@ UFightingGameInstance::UFightingGameInstance()
 void UFightingGameInstance::Init()
 {
 	Super::Init();
-	FString path = FPaths::ProjectSavedDir() + "PlayerData.sav";
+	FString path = FPaths::ProjectContentDir() + "PlayerData.sav";
 	std::string fullPath = TCHAR_TO_UTF8(*path);
 	std::ifstream file;
 	file.open(fullPath, std::ifstream::in);
@@ -310,7 +310,7 @@ void UFightingGameInstance::Init()
 
 void UFightingGameInstance::SavePlayerFile()
 {
-		FString path = FPaths::ProjectSavedDir() + "PlayerData.sav";
+		FString path = FPaths::ProjectContentDir() + "PlayerData.sav";
 		std::string fullPath = TCHAR_TO_UTF8(*path);
 		std::ofstream out(fullPath);
 		if (!out.good())
