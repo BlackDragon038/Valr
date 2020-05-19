@@ -659,18 +659,18 @@ void AFighterPawn::AxisBlock(float Axis)
 			if (InputID != INPUT::BLOCK)
 			{
 				Stamina -= BlockData.staminaCost;
-				if (Manager->Player1 == this)
-				{
-					if (Manager->Player2->State == STATE::ATTACKING)
-						bAllowParry = true;
-					else bAllowParry = false;
-				}
-				else if (Manager->Player2 == this)
-				{
-					if (Manager->Player1->State == STATE::ATTACKING)
-						bAllowParry = true;
-					else bAllowParry = false;
-				}
+			}
+			if (Manager->Player1 == this)
+			{
+				if (Manager->Player2->State == STATE::ATTACKING)
+					bAllowParry = true;
+				else bAllowParry = false;
+			}
+			else if (Manager->Player2 == this)
+			{
+				if (Manager->Player1->State == STATE::ATTACKING)
+					bAllowParry = true;
+				else bAllowParry = false;
 			}
 			InputID = INPUT::BLOCK;
 			blockCooldown = BlockData.Cooldown;

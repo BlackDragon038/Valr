@@ -154,9 +154,9 @@ void AKnightAIController::Tick(float DeltaTime)
 						int attackChance = 0;
 						switch (Manager->Instance->Difficulty)
 						{
-						case DIFFICULTY::EASY: attackChance = 30; break;
-						case DIFFICULTY::NORMAL: attackChance = 50; break;
-						case DIFFICULTY::HARD: attackChance = 70; break;
+						case DIFFICULTY::EASY: attackChance = 40; break;
+						case DIFFICULTY::NORMAL: attackChance = 65; break;
+						case DIFFICULTY::HARD: attackChance = 85; break;
 						}
 						if (Fighter->Stamina > Fighter->Attacks[2].staminaCost && FMath::RandRange(0, 100) < attackChance)
 						{
@@ -335,21 +335,6 @@ void AKnightAIController::Tick(float DeltaTime)
 			replayMemory.Empty();
 			if (exploreRate <= 1 && bTrain) exploreRate += 0.1;
 		}
-
-		UE_LOG(LogTemp, Warning, TEXT("AI: %s	MaxQIndex %i		Reward: %f		ExploreRate: %f"), *Fighter->GetName(), maxQIndex, currentReward, exploreRate, Fighter->State)
-			FString message = FString::Printf(
-				TEXT("\n\n\n\
-			Stats\n\
-			Current Training: %s\n\
-			Explore Rate: %f\n\
-			Q-Value: %i\n\
-			Frame Reward Value: %f"),
-				*Fighter->GetName(), exploreRate, maxQIndex, currentReward);
-
-		GEngine->AddOnScreenDebugMessage(
-			0, 0.5f, FColor::Cyan,
-			message
-		);
 	}
 
 	if (bTrain)
@@ -359,9 +344,9 @@ void AKnightAIController::Tick(float DeltaTime)
 		{
 			switch (Manager->Instance->Difficulty)
 			{
-			case DIFFICULTY::EASY: Network->SaveWeights("model_" + Fighter->GetName() + "_EASY"); break;
-			case DIFFICULTY::NORMAL: Network->SaveWeights("model_" + Fighter->GetName() + "_NORMAL"); break;
-			case DIFFICULTY::HARD: Network->SaveWeights("model_" + Fighter->GetName() + "_HARD"); break;
+			case DIFFICULTY::EASY: Network->SaveWeights("model_Knight_EASY"); break;
+			case DIFFICULTY::NORMAL: Network->SaveWeights("model_Knight_NORMAL"); break;
+			case DIFFICULTY::HARD: Network->SaveWeights("model_Knight_HARD"); break;
 			}
 		}
 	}

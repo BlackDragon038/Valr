@@ -70,8 +70,7 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 					}
 				}
 			}
-			else { UE_LOG(LogTemp, Fatal, TEXT("FightManager: currentPartsIndex (%i) index variable is greater than Attacks.Parts (%i) array! Exiting..."),P1->currentPartsIndex, P1->Attacks[static_cast<uint8>(P1->attackType)].Parts.Num() - 1) return; }
-		} else { UE_LOG(LogTemp, Fatal, TEXT("FightManager: attackType (%i) index variable is greater than Attacks (%i) array! Exiting..."), static_cast<uint8>(P1->attackType), P1->Attacks.Num() - 1) return; }
+		} 
 
 		if (Angle(P1->GetActorRightVector(), toP2) > P1->Attacks[static_cast<uint8>(P1->attackType)].Parts[P1->currentPartsIndex].minAngle &&
 			Angle(P1->GetActorRightVector(), toP2) < P1->Attacks[static_cast<uint8>(P1->attackType)].Parts[P1->currentPartsIndex].maxAngle &&
@@ -138,10 +137,6 @@ void AFightManager::processPlayer(AFighterPawn* &P1, AFighterPawn* &P2, FVector 
 				P1->SetActorLocation(P1->GetActorLocation() + (P1->GetActorForwardVector() *
 				((P1->Attacks[static_cast<uint8>(P1->attackType)].AttackTotalFrameCount - P1->currentFrameOfAttack) * P1->Attacks[static_cast<uint8>(P1->attackType)].attackPush)));
 		}
-		GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Yellow, FString::Printf(TEXT("Attack Min Angle: %f"), P1->Attacks[static_cast<uint8>(P1->attackType)].Parts[P1->currentPartsIndex].minAngle));
-		GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Yellow, FString::Printf(TEXT("Attack Max Angle: %f"), P1->Attacks[static_cast<uint8>(P1->attackType)].Parts[P1->currentPartsIndex].maxAngle));
-		GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Yellow, FString::Printf(TEXT("Attack Min Distance: %f"), P1->Attacks[static_cast<uint8>(P1->attackType)].Parts[P1->currentPartsIndex].minDist));
-		GEngine->AddOnScreenDebugMessage(-1, -1.f, FColor::Yellow, FString::Printf(TEXT("Attack Max Distance: %f"), P1->Attacks[static_cast<uint8>(P1->attackType)].Parts[P1->currentPartsIndex].maxDist));
 	}
 	else if (P1->State == STATE::STUNNED)
 	{
